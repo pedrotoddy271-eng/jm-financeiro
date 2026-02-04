@@ -1,0 +1,1370 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a1a">
+    <title>JM Financeiro Ultra</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* --- VARIAVEIS MODO CLARO (PADRÃO) --- */
+            --bg-body: #f8f9fa;
+            --surface-solid: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6c757d;
+            --gold-start: #d4af37; --gold-end: #b48811;
+            --gold-gradient: linear-gradient(135deg, var(--gold-start), var(--gold-end));
+            
+            --success: #27ae60; --success-bg: #eafaf1;
+            --danger: #c0392b; --danger-bg: #fadbd8;
+            --info: #2980b9; --info-bg: #ebf5fb;
+            --fiado: #8e44ad; --fiado-bg: #f5eef8;
+            --produto: #00cec9; --produto-bg: #e0fbfb;
+            
+            --radius-xl: 24px; --radius-lg: 16px;
+            --shadow-soft: 0 8px 30px rgba(0,0,0,0.04);
+            --nav-height: 80px;
+            
+            --border-color: #f0f0f0;
+            --input-bg: #f4f6f8;
+            --header-bg: rgba(255,255,255,0.8);
+        }
+
+        /* --- VARIAVEIS MODO ESCURO --- */
+        [data-theme="dark"] {
+            --bg-body: #050505;
+            --surface-solid: #18181b;
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            
+            --success-bg: #0f291e;
+            --danger-bg: #33100e;
+            --info-bg: #0e1f2b;
+            --fiado-bg: #220f2b;
+            --produto-bg: #0b2626;
+
+            --shadow-soft: 0 8px 30px rgba(0,0,0,0.5);
+            --border-color: #27272a;
+            --input-bg: #27272a;
+            --header-bg: rgba(24, 24, 27, 0.85);
+        }
+        
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-body); 
+            background-image: radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 20%);
+            color: var(--text-primary); margin: 0; padding-bottom: calc(var(--nav-height) + 40px); overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        /* --- NOTIFICAÇÃO FIXA DE CONTAS (NOVO) --- */
+        #notificacao-fixa {
+            position: fixed; top: 80px; left: 50%; transform: translateX(-50%);
+            width: 90%; max-width: 450px;
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white; padding: 12px 20px; border-radius: 50px;
+            box-shadow: 0 10px 25px rgba(192, 57, 43, 0.4);
+            z-index: 9000; display: none; /* Começa oculto */
+            align-items: center; justify-content: space-between;
+            animation: slideDown 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #notificacao-fixa strong { font-size: 0.95rem; display: block; }
+        #notificacao-fixa small { color: #ffdad9; font-size: 0.8rem; }
+
+        /* --- MODO OLHO CURIOSO (BLUR) --- */
+        body.privacy-active .valor, 
+        body.privacy-active .item-valor,
+        body.privacy-active .text-green,
+        body.privacy-active .text-red,
+        body.privacy-active .text-primary,
+        body.privacy-active .text-prod {
+            filter: blur(8px);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* --- CONFETE CANVAS --- */
+        #confetti-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 99999;
+        }
+
+        /* --- COMEMORAÇÃO TICKET ALTO --- */
+        #overlay-celebracao {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7); z-index: 12000;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            animation: fadeIn 0.3s;
+        }
+        .pedro-comemora {
+            width: 250px; animation: popUpPedro 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .texto-comemora {
+            color: #d4af37; font-size: 1.5rem; font-weight: 800; text-align: center; margin-top: 20px;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.5); text-transform: uppercase;
+            animation: slideUpTuto 0.5s;
+        }
+        @keyframes popUpPedro { from { transform: scale(0) rotate(-10deg); } to { transform: scale(1) rotate(0deg); } }
+
+        /* --- TELA DE FECHAMENTO (VERSICULO) --- */
+        #overlay-fechamento {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--surface-solid); z-index: 13000;
+            display: none; flex-direction: column; justify-content: center; align-items: center;
+            padding: 40px; text-align: center;
+        }
+        .spinner-biblia {
+            width: 50px; height: 50px; border: 5px solid rgba(212, 175, 55, 0.2);
+            border-top-color: var(--gold-end); border-radius: 50%;
+            animation: spin 1s linear infinite; margin-bottom: 30px;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .texto-versiculo { font-size: 1.1rem; color: var(--text-primary); font-style: italic; line-height: 1.6; }
+        .ref-versiculo { margin-top: 15px; font-weight: 700; color: var(--gold-end); font-size: 0.9rem; }
+
+        /* --- ESTILO DAS NOTICIAS/ESTRATEGIA (FIFA STYLE) --- */
+        .news-item {
+            background: var(--surface-solid); padding: 15px; border-radius: 16px; 
+            margin-bottom: 12px; box-shadow: var(--shadow-soft); display: flex; 
+            align-items: center; gap: 15px; border: 1px solid var(--border-color);
+            transition: transform 0.2s;
+        }
+        .news-item:active { transform: scale(0.98); }
+        
+        .bolinha-fifa {
+            width: 15px; height: 15px; border-radius: 50%; flex-shrink: 0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2); border: 2px solid rgba(255,255,255,0.3);
+        }
+        .b-verde { background: #2ecc71; box-shadow: 0 0 8px #2ecc71; }
+        .b-amarela { background: #f1c40f; box-shadow: 0 0 8px #f1c40f; }
+        .b-vermelha { background: #e74c3c; box-shadow: 0 0 8px #e74c3c; }
+
+        .news-content h4 { margin: 0 0 3px 0; font-size: 0.9rem; color: var(--text-primary); }
+        .news-content p { margin: 0; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.4; }
+
+        /* --- NOVOS ESTILOS DE BOTÕES --- */
+        .quick-btns-container { display: flex; gap: 8px; margin-bottom: 15px; }
+        .quick-btn {
+            flex: 1; padding: 12px; border: 1px solid var(--border-color); background: var(--input-bg);
+            border-radius: 12px; color: var(--text-primary); font-weight: 700; cursor: pointer;
+            transition: 0.2s; font-size: 1rem;
+        }
+        .quick-btn:active { background: var(--gold-start); color: white; transform: scale(0.95); }
+
+        .category-scroll {
+            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px;
+            -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        }
+        .category-scroll::-webkit-scrollbar { display: none; }
+        .cat-btn {
+            white-space: nowrap; padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-color);
+            background: var(--surface-solid); color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .cat-btn:active { background: var(--info); color: white; border-color: var(--info); }
+
+        /* --- CONTROLE DE VOLUME NA CONFIGURAÇÃO --- */
+        .volume-control-container {
+            display: flex; align-items: center; gap: 15px; background: var(--input-bg);
+            padding: 15px; border-radius: 16px; margin-bottom: 20px;
+        }
+        .btn-volume {
+            width: 40px; height: 40px; border-radius: 50%; border: none;
+            background: var(--surface-solid); color: var(--text-primary); font-size: 1.2rem;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); cursor: pointer;
+        }
+        .volume-display { font-weight: 800; color: var(--gold-end); width: 40px; text-align: center; }
+
+        /* --- AJUSTES MODO ESCURO --- */
+        [data-theme="dark"] .quick-btn { background: #2a2a2a; border-color: #444; }
+        [data-theme="dark"] .cat-btn { background: #2a2a2a; color: #ddd; border-color: #444; }
+        [data-theme="dark"] .card.lucro { background: linear-gradient(145deg, #222, #1a1a1a); border: 1px solid #333; }
+        [data-theme="dark"] .bottom-nav { background: rgba(30,30,30,0.95); box-shadow: 0 -5px 20px rgba(0,0,0,0.3); }
+        [data-theme="dark"] .modal-box, [data-theme="dark"] .ajudante-container-fixa { background: #1f1f1f; border: 1px solid #333; }
+        [data-theme="dark"] .btn-faq { background: #2a2a2a; border-color: #333; color: #ddd; }
+        [data-theme="dark"] .toast { background: #222; color: #fff; }
+        [data-theme="dark"] .nav-item { color: #555; }
+        [data-theme="dark"] .nav-item.active { color: var(--gold-end); }
+        [data-theme="dark"] .news-item { background: #1f1f1f; border-color: #333; }
+        [data-theme="dark"] .volume-control-container { background: #2a2a2a; }
+        [data-theme="dark"] .btn-volume { background: #333; color: white; }
+
+        /* --- LOADER --- */
+        #pro-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; background: #111; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.6s, visibility 0.6s; }
+        #pro-loader.finish-loading { opacity: 0; visibility: hidden; pointer-events: none; }
+        .loader-content { text-align: center; animation: float 3s ease-in-out infinite; }
+        .loader-logo { font-size: 4rem; margin-bottom: 10px; display: block; text-shadow: 0 0 20px rgba(212, 175, 55, 0.6); }
+        .loader-text { color: #d4af37; font-size: 1.5rem; font-weight: 800; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 30px; }
+        .loader-sub { color: #888; font-size: 0.9rem; margin-top: 10px; min-height: 20px; } 
+        .progress-bar-container { width: 200px; height: 4px; background: #333; border-radius: 4px; overflow: hidden; margin-top: 20px; }
+        .progress-bar { width: 0%; height: 100%; background: var(--gold-gradient); box-shadow: 0 0 10px rgba(212, 175, 55, 0.5); transition: width 2.5s ease-out; }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        /* --- UI GERAL --- */
+        #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 11000; width: 90%; max-width: 400px; pointer-events: none; }
+        .toast { background: var(--surface-solid); padding: 16px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px; margin-bottom: 10px; animation: slideDown 0.4s; border-left: 5px solid #333; pointer-events: auto; }
+        .toast.success { border-left-color: var(--success); } .toast.error { border-left-color: var(--danger); }
+        .toast.warning { border-left-color: #f39c12; }
+        @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        header { background: var(--header-bg); backdrop-filter: blur(10px); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        .header-logo h1 { margin: 0; font-size: 1.2rem; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
+        
+        .relogio-container { text-align: right; margin-right: 10px; }
+        .relogio-hora { font-weight: 800; font-size: 1rem; color: var(--text-primary); line-height: 1; }
+        .relogio-data { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-icon-header { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--border-color); background: var(--surface-solid); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; }
+        .btn-ajuda { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--border-color); background: var(--surface-solid); color: var(--gold-end); font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+
+        .container { padding: 20px; max-width: 600px; margin: 0 auto; }
+        .tab-content { display: none; animation: fadeIn 0.4s; } .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* --- DASHBOARD --- */
+        .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
+        .card { background: var(--surface-solid); padding: 15px; border-radius: var(--radius-lg); text-align: center; box-shadow: var(--shadow-soft); border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; min-height: 100px; transition: transform 0.3s, box-shadow 0.3s; }
+        
+        .card.full { grid-column: span 2; padding: 20px; }
+        .card.lucro { background: linear-gradient(145deg, #fff, #fffdf5); border: 1px solid rgba(212, 175, 55, 0.2); }
+        .card.fiado { background: var(--fiado-bg); border: 1px solid rgba(142, 68, 173, 0.2); grid-column: span 2; }
+        .card.fiado .valor { color: var(--fiado); }
+        .card.entrada-box { background: var(--success-bg); border: 1px solid rgba(39, 174, 96, 0.2); }
+        .card.entrada-box h3, .card.entrada-box .valor { color: var(--success); }
+        .card.saida-box { background: var(--danger-bg); border: 1px solid rgba(192, 57, 43, 0.2); }
+        .card.saida-box h3, .card.saida-box .valor { color: var(--danger); }
+
+        .card h3 { margin: 0 0 5px; font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
+        .card .valor { font-size: 1.3rem; font-weight: 800; color: var(--text-primary); }
+        .card.lucro .valor { color: #b48811; font-size: 2rem; }
+
+        .segmented-control { display: flex; background: var(--input-bg); padding: 4px; border-radius: 14px; margin-bottom: 20px; }
+        .segment-btn { flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-secondary); font-weight: 600; cursor: pointer; border-radius: 10px; transition: 0.3s; }
+        .segment-btn.active { background: var(--surface-solid); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+
+        /* --- FORM --- */
+        .form-container { background: var(--surface-solid); padding: 20px; border-radius: var(--radius-xl); box-shadow: var(--shadow-soft); margin-bottom: 25px; transition: transform 0.3s; }
+        input, select { width: 100%; padding: 15px; background: var(--input-bg); color: var(--text-primary); border: 2px solid transparent; border-radius: 12px; margin-bottom: 12px; font-family: inherit; font-size: 1rem; outline: none; transition: 0.3s; }
+        input:focus, select:focus { background: var(--surface-solid); border-color: var(--gold-start); }
+        label { font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; margin-left: 5px; text-transform: uppercase; }
+
+        .btn-main { width: 100%; padding: 18px; border: none; border-radius: 14px; font-weight: 800; text-transform: uppercase; color: white; background: var(--gold-gradient); box-shadow: 0 8px 20px -5px rgba(180, 136, 17, 0.4); cursor: pointer; transition: 0.2s; }
+        .btn-main:active { transform: scale(0.98); }
+        .btn-dark { background: #2d3436; box-shadow: 0 8px 20px -5px rgba(0,0,0,0.3); display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
+        
+        .check-container { display: flex; align-items: center; gap: 10px; background: var(--fiado-bg); padding: 12px; border-radius: 12px; margin-bottom: 15px; cursor: pointer; border: 1px solid rgba(142, 68, 173, 0.3); }
+        .custom-check { width: 20px; height: 20px; border: 2px solid var(--fiado); border-radius: 5px; display: flex; align-items: center; justify-content: center; background: white; }
+        input[type="checkbox"]:checked + .custom-check { background: var(--fiado); }
+
+        /* --- LISTAS --- */
+        .item { display: flex; justify-content: space-between; align-items: center; background: var(--surface-solid); padding: 15px; border-radius: 16px; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .item-icon { width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 1.1rem; }
+        .item.vencendo-hoje { border: 2px solid var(--danger); background: var(--danger-bg); animation: pulseRed 2s infinite; }
+        .alert-badge { background: var(--danger); color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; margin-left: 8px; display: inline-block; }
+        @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
+        
+        .item.conta-paga { border: 1px solid #2ecc71; background: var(--success-bg); opacity: 0.8; }
+        .badge-pago { background: #2ecc71; color: white; padding: 3px 6px; border-radius: 5px; font-size: 0.65rem; font-weight: bold; margin-left: 5px; }
+
+        /* --- ESTILO ESPECIAL PARA DATA DESTACADA --- */
+        .data-destaque { font-weight: 800; color: var(--gold-end); font-size: 0.85rem; margin-top: 2px; display: block; letter-spacing: 0.5px; }
+
+        /* --- NAV --- */
+        .bottom-nav { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 95%; max-width: 450px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); height: 75px; border-radius: 35px; display: flex; justify-content: space-evenly; align-items: center; box-shadow: 0 15px 40px rgba(0,0,0,0.1); z-index: 1000; }
+        .nav-item { border: none; background: none; color: #ccc; display: flex; flex-direction: column; align-items: center; width: 60px; transition: 0.3s; }
+        .nav-item.active { color: var(--gold-end); transform: translateY(-5px); }
+        .nav-icon { font-size: 1.3rem; } .nav-label { font-size: 0.6rem; font-weight: 700; margin-top: 2px; }
+
+        /* --- MODAIS --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(3px); z-index: 9000; display: none; justify-content: center; align-items: center; }
+        .modal-box { background: var(--surface-solid); padding: 25px; border-radius: 25px; width: 85%; max-width: 350px; text-align: center; animation: zoomIn 0.3s; max-height: 80vh; overflow-y: auto; color: var(--text-primary); }
+        @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        /* --- TUTORIAL --- */
+        #tutorial-overlay { align-items: flex-end; justify-content: center; padding-bottom: 0; }
+        .ajudante-container-fixa {
+            background: var(--surface-solid); width: 100%; max-width: 500px; 
+            border-top-left-radius: 30px; border-top-right-radius: 30px;
+            padding: 20px; position: relative; text-align: center;
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
+            animation: slideUpTuto 0.4s ease-out;
+            color: var(--text-primary);
+        }
+        #img-pedro { 
+            width: 220px; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+            z-index: 10005; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2)); pointer-events: none;
+        }
+        .balao-menu { max-height: 50vh; overflow-y: auto; text-align: left; padding-top: 10px; }
+        .tutorial-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .btn-faq {
+            background: var(--input-bg); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 12px;
+            text-align: left; font-weight: 600; color: var(--text-primary); cursor: pointer;
+            display: flex; justify-content: space-between; align-items: center; transition: 0.2s;
+        }
+        .btn-faq:active { background: var(--gold-gradient); color: white; border-color: transparent; }
+        .btn-faq::after { content: '👉'; font-size: 0.9rem; }
+        .destaque-tutorial {
+            position: relative; z-index: 10001; 
+            box-shadow: 0 0 0 4px #fff, 0 0 0 8px var(--gold-start), 0 0 100px rgba(0,0,0,0.8) !important;
+            transform: scale(1.02); transition: 0.3s; background: var(--surface-solid) !important;
+        }
+        @keyframes slideUpTuto { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="confetti-canvas"></canvas>
+    
+    <div id="overlay-celebracao">
+        <img src="pedro4.png" class="pedro-comemora" alt="Pedro Comemorando">
+        <div class="texto-comemora">UAU! QUE LANÇAMENTO! 🚀</div>
+    </div>
+
+    <div id="overlay-fechamento">
+        <div class="spinner-biblia"></div>
+        <div class="texto-versiculo" id="texto-versiculo-dia">...</div>
+        <div class="ref-versiculo" id="ref-versiculo-dia">...</div>
+    </div>
+
+    <div id="notificacao-fixa">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:1.5rem;">📅</span>
+            <div>
+                <strong>Contas Vencendo Hoje!</strong>
+                <small>Toque em "Casa" para pagar.</small>
+            </div>
+        </div>
+        <button onclick="notificacaoFechada=true; document.getElementById('notificacao-fixa').style.display='none'" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+    </div>
+
+    <div id="toast-container"></div>
+    
+    <div id="pro-loader">
+        <div class="loader-content">
+            <span class="loader-logo">✨</span>
+            <div class="loader-text">JM Financeiro</div>
+            <div id="loader-phrase" class="loader-sub">Carregando...</div>
+            <div class="progress-bar-container"><div class="progress-bar" id="loader-bar"></div></div>
+        </div>
+    </div>
+
+    <div id="modal-calendario" class="modal-overlay">
+        <div class="modal-box">
+            <h3>📅 Iniciar Caixa</h3>
+            <p style="color:var(--text-secondary); font-size:0.9rem;">Selecione a data de trabalho:</p>
+            <input type="date" id="data-verificacao" style="text-align:center;">
+            <button class="btn-main" onclick="confirmarDataInicial()">Confirmar</button>
+        </div>
+    </div>
+
+    <div id="modal-config" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="margin-top:0;">⚙️ Configurações</h3>
+            
+            <p style="text-align:left; font-weight:bold; color:var(--text-secondary); margin-bottom:10px;">VOLUME DOS EFEITOS 🔊</p>
+            <div class="volume-control-container">
+                <button class="btn-volume" onclick="mudarVolume(-0.1)">-</button>
+                <div class="volume-display" id="volume-valor">100</div>
+                <button class="btn-volume" onclick="mudarVolume(0.1)">+</button>
+            </div>
+
+            <p style="text-align:left; font-weight:bold; color:var(--text-secondary); margin-bottom:10px;">APARÊNCIA</p>
+            <button class="btn-faq" onclick="alternarTema()" style="margin-bottom:20px;">
+                <span>Modo Escuro / Claro</span>
+                <span id="txt-tema-modal">🌙</span>
+            </button>
+
+            <button class="btn-main" onclick="document.getElementById('modal-config').style.display='none'">Fechar Configuração</button>
+        </div>
+    </div>
+
+    <div id="modal-detalhes" class="modal-overlay">
+        <div class="modal-box" style="text-align:left;">
+            <h3 id="titulo-detalhes" style="color:var(--gold-end); border-bottom:1px solid #eee; padding-bottom:10px;">Detalhes</h3>
+            <div id="conteudo-detalhes" style="margin-top:15px;"></div>
+            <button onclick="document.getElementById('modal-detalhes').style.display='none'" style="width:100%; padding:15px; margin-top:20px; background:#333; color:white; border:none; border-radius:12px;">Fechar</button>
+        </div>
+    </div>
+
+    <div id="modal-conta" class="modal-overlay">
+        <div class="modal-box">
+            <h3 style="color:var(--info);">Nova Conta Fixa</h3>
+            <div style="text-align:left;">
+                <label>Nome</label><input type="text" id="nova-conta-nome">
+                <label>Valor (R$)</label><input type="number" id="nova-conta-valor">
+                <label>Vencimento</label><input type="date" id="nova-conta-data">
+            </div>
+            <button class="btn-main" style="background:var(--info);" onclick="salvarContaModal()">Salvar</button>
+            <button onclick="fecharModalConta()" style="margin-top:15px; border:none; background:none; color:var(--text-secondary);">Cancelar</button>
+        </div>
+    </div>
+
+    <div id="tutorial-overlay" class="modal-overlay" style="background:rgba(0,0,0,0.8); display:none; align-items: flex-end;">
+        <div class="ajudante-container-fixa">
+            <img id="img-pedro" src="pedro1.png" onerror="this.src='https://cdn-icons-png.flaticon.com/512/4712/4712109.png'">
+            
+            <div class="balao-menu">
+                <div id="tutorial-menu">
+                    <h3 style="margin:0 0 5px 0; color:var(--text-primary);">Fala Chefe! 💈</h3>
+                    <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:15px;">Toque na dúvida para eu te mostrar:</p>
+                    <div class="tutorial-list" id="faq-list"></div>
+                    <button onclick="fecharTutorial()" style="width:100%; padding:12px; margin-top:15px; background:var(--input-bg); border:none; border-radius:12px; color:var(--text-secondary);">Fechar Ajuda</button>
+                </div>
+
+                <div id="tutorial-resposta" style="display:none;">
+                    <h4 id="faq-titulo" style="margin:0 0 10px 0; color:var(--gold-end);">...</h4>
+                    <p id="faq-texto" style="font-size:0.95rem; color:var(--text-primary); line-height:1.6;">...</p>
+                    <button class="btn-main" onclick="voltarMenu()" style="padding:12px; margin-top:20px;">Entendi, voltar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <header>
+        <div class="header-logo"><h1>JM FINANCEIRO</h1></div>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <div class="relogio-container">
+                <div class="relogio-hora" id="relogio-hora">00:00:00</div>
+                <div class="relogio-data" id="relogio-data">--/--</div>
+            </div>
+            <button class="btn-icon-header" onclick="alternarPrivacidade()" id="btn-privacy">👁️</button>
+            <button class="btn-icon-header" onclick="abrirConfig()">⚙️</button> <button class="btn-ajuda" onclick="abrirTutorial()">?</button>
+        </div>
+    </header>
+
+    <div class="container">
+        
+        <div id="tab-salao" class="tab-content active">
+            
+            <button class="btn-main btn-dark" id="btn-concluir-dia" onclick="concluirDia()">
+                <span>✅</span> FECHAR O DIA (Check-in)
+            </button>
+            
+            <div class="segmented-control" id="area-visao">
+                <button class="segment-btn active" id="seg-hoje" onclick="mudarVisao('hoje')">Ver Hoje</button>
+                <button class="segment-btn" id="seg-mes" onclick="mudarVisao('mes')">Ver Mês</button>
+            </div>
+
+            <div class="dashboard" id="area-dashboard">
+                <div class="card full lucro">
+                    <h3 id="titulo-lucro">Lucro Líquido (Hoje)</h3>
+                    <div class="valor" id="saldoSalao">R$ 0,00</div>
+                </div>
+                
+                <div class="card fiado" id="card-fiado">
+                    <h3>⚠️ A Receber (Fiado)</h3>
+                    <div class="valor" id="totalPendente">R$ 0,00</div>
+                </div>
+                
+                <div class="card entrada-box">
+                    <h3>Entradas (Serviços)</h3>
+                    <div class="valor" id="totalServicos">R$ 0,00</div>
+                </div>
+
+                <div class="card saida-box" id="card-saida">
+                    <h3>Saídas (Despesas)</h3>
+                    <div class="valor" id="saidasSalao">R$ 0,00</div>
+                </div>
+                
+                <div class="card full" style="border: 1px solid var(--produto); background:var(--produto-bg);">
+                    <h3 style="color:var(--produto);">Venda Produtos</h3>
+                    <div class="valor" style="color:var(--produto);" id="totalProdutos">R$ 0,00</div>
+                </div>
+            </div>
+
+            <div class="form-container" id="area-lancamento">
+                <h4 style="margin:0 0 15px 0;">Novo Lançamento</h4>
+
+                <div class="quick-btns-container">
+                    <button class="quick-btn" onclick="setValor(25)">R$ 25</button>
+                    <button class="quick-btn" onclick="setValor(45)">R$ 45</button>
+                    <button class="quick-btn" onclick="setValor(65)">R$ 65</button>
+                </div>
+                
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <div><label>Data</label><input type="date" id="dataSalao"></div>
+                    <div><label>Valor</label><input type="number" id="valorSalao" inputmode="decimal" placeholder="0.00"></div>
+                </div>
+                
+                <label>Tipo</label>
+                <select id="tipoSalao" onchange="verificarTipo()">
+                    <option value="entrada_servico">✂️ Serviço (Corte/Barba)</option>
+                    <option value="entrada_produto">🧴 Venda de Produto</option>
+                    <option value="entrada_total">💰 Fechamento Total</option>
+                    <option value="saida">💸 Despesa/Saída</option>
+                </select>
+
+                <div id="container-desc">
+                    <label>Descrição</label>
+                    <input type="text" id="descSalao" placeholder="Ex: Corte Degrade">
+                </div>
+                
+                <div id="grupoPendente" class="check-container" onclick="toggleCheck()">
+                    <input type="checkbox" id="checkPendente" style="display:none;">
+                    <div class="custom-check"></div>
+                    <label style="margin:0; cursor:pointer; color:var(--fiado); font-weight:bold;">Marcar como FIADO</label>
+                </div>
+                
+                <button class="btn-main" onclick="adicionar('salao')">Lançar</button>
+            </div>
+
+            <div id="listaSalao"></div>
+            <button id="btn-fechar-mes" onclick="fecharMes()" style="width:100%; padding:15px; border:2px solid var(--danger); background:none; color:var(--danger); font-weight:bold; border-radius:14px; margin-top:30px;">🔒 FECHAR E ARQUIVAR MÊS</button>
+        </div>
+
+        <div id="tab-casa" class="tab-content">
+            <div class="card full" style="background:var(--info-bg); border-color:var(--info); margin-bottom:20px;">
+                <h3 style="color:var(--info);">Gasto Pessoal (Mês)</h3>
+                <div class="valor" style="color:var(--info);" id="saldoCasa">R$ 0,00</div>
+            </div>
+
+            <div class="form-container" id="area-fixas">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h4>Contas Fixas</h4>
+                    <button onclick="abrirModalConta()" style="background:var(--info); color:white; border:none; width:30px; height:30px; border-radius:8px;">+</button>
+                </div>
+                <div id="listaFixas" style="margin-top:15px;"></div>
+            </div>
+
+            <div class="form-container">
+                <h4>Gasto Avulso</h4>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <input type="date" id="dataCasa">
+                    <input type="number" id="valorCasa" placeholder="Valor">
+                </div>
+                
+                <div class="category-scroll">
+                    <button class="cat-btn" onclick="setDescCasa('🛒 Mercado')">🛒 Mercado</button>
+                    <button class="cat-btn" onclick="setDescCasa('💊 Farmácia')">💊 Farmácia</button>
+                    <button class="cat-btn" onclick="setDescCasa('🍔 Comida')">🍔 Comida</button>
+                    <button class="cat-btn" onclick="setDescCasa('💡 Contas')">💡 Contas</button>
+                    <button class="cat-btn" onclick="setDescCasa('👗 Roupas')">👗 Roupas</button>
+                </div>
+
+                <input type="text" id="descCasa" placeholder="Descrição">
+                <button class="btn-main" style="background:linear-gradient(135deg, #3498db, #2980b9);" onclick="adicionar('casa')">Salvar Gasto</button>
+            </div>
+            <div id="listaCasa"></div>
+        </div>
+
+        <div id="tab-historico" class="tab-content">
+            <div style="background:var(--surface-solid); padding:20px; border-radius:16px; margin-bottom:20px; text-align:center; border:1px solid var(--border-color); box-shadow:var(--shadow-soft);">
+                <h4 style="margin-top:0; color:var(--text-secondary);">Segurança dos Dados</h4>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-main" onclick="fazerBackup()" style="background:var(--info); flex:1; box-shadow:none;">☁️ Salvar Backup</button>
+                    <button class="btn-main" onclick="triggerRestore()" style="background:#333; flex:1; box-shadow:none;">📥 Recuperar Dados</button>
+                </div>
+                <input type="file" id="input-restore" style="display:none;" onchange="restaurarDados(this)" accept=".json">
+                <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0; margin-top:10px;">Salve o arquivo em um local seguro (WhatsApp, Drive).</p>
+            </div>
+
+            <h3 style="text-align:center;">Relatórios Fechados</h3>
+            <div id="lista-meses-fechados"></div>
+        </div>
+
+        <div id="tab-estrategia" class="tab-content">
+            <h3 style="margin-bottom:20px; text-align:center;">Desempenho & Dicas</h3>
+            <div id="lista-insights"></div>
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="mudarAba('salao')" id="nav-salao"><span class="nav-icon">✂️</span><span class="nav-label">Salão</span></button>
+        <button class="nav-item" onclick="mudarAba('casa')" id="nav-casa"><span class="nav-icon">🏠</span><span class="nav-label">Casa</span></button>
+        <button class="nav-item" onclick="mudarAba('estrategia')" id="nav-estrategia"><span class="nav-icon">📈</span><span class="nav-label">Estratégia</span></button>
+        <button class="nav-item" onclick="mudarAba('historico')" id="nav-historico"><span class="nav-icon">📂</span><span class="nav-label">Histórico</span></button>
+    </nav>
+
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js').catch(err => console.log('Erro SW:', err));
+            });
+        }
+    </script>
+
+    <script>
+        // --- SONS ---
+        const audioCaixa = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
+        const audioPapel = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
+        
+        let volumeSom = parseFloat(localStorage.getItem('jm_volume')) || 1.0;
+        
+        function aplicarVolume() {
+            audioCaixa.volume = volumeSom;
+            audioPapel.volume = volumeSom;
+            document.getElementById('volume-valor').innerText = Math.round(volumeSom * 100);
+        }
+
+        function mudarVolume(delta) {
+            volumeSom += delta;
+            if(volumeSom > 1) volumeSom = 1;
+            if(volumeSom < 0) volumeSom = 0;
+            localStorage.setItem('jm_volume', volumeSom);
+            aplicarVolume();
+            // Toca um som curto para testar
+            audioPapel.currentTime = 0; 
+            audioPapel.play().catch(e=>{});
+        }
+
+        function abrirConfig() {
+            document.getElementById('modal-config').style.display = 'flex';
+        }
+
+        // --- DADOS ---
+        let transacoes = JSON.parse(localStorage.getItem('jm_financas_v28')) || [];
+        let contasFixas = JSON.parse(localStorage.getItem('jm_fixas_v5')) || [];
+        let historicoFechado = JSON.parse(localStorage.getItem('jm_historico_v17')) || [];
+        let visaoAtual = 'hoje';
+        let notificacaoFechada = false; // Controle da notificação
+
+        // --- FRASES DO PEDRO E VERSICULOS ---
+        const frasesPedro = [
+            "Pedro Virtual: Afiando as tesouras...",
+            "Pedro Virtual: Contando as moedas...",
+            "Pedro Virtual: Preparando o café digital...",
+            "Pedro Virtual: Arrumando a bancada...",
+            "Pedro Virtual: Tudo pronto, Chefe!"
+        ];
+
+        const versiculos = [
+            { t: "Este é o dia que fez o Senhor; regozijemo-nos e alegremo-nos nele.", r: "Salmos 118:24" },
+            { t: "Consagra ao Senhor tudo o que você faz, e os seus planos serão bem-sucedidos.", r: "Provérbios 16:3" },
+            { t: "Tudo posso naquele que me fortalece.", r: "Filipenses 4:13" },
+            { t: "O Senhor é o meu pastor; de nada terei falta.", r: "Salmos 23:1" },
+            { t: "Até aqui nos ajudou o Senhor.", r: "1 Samuel 7:12" }
+        ];
+
+        // --- DÚVIDAS DO PEDRO ---
+        const duvidas = [
+            { t: "Aba Estratégia", r: "Ali eu te mostro se o salão tá Verde (Bem), Amarelo (Médio) ou Vermelho (Ruim), igual no FIFA!", el: "nav-estrategia", aba: "estrategia" },
+            { t: "Botões Rápidos", r: "Criei botões com 25, 45 e 65 pra você não precisar digitar sempre. É só clicar e LANÇAR!", el: "area-lancamento" },
+            { t: "Sons e Confete", r: "Quando você lança lucro, faz barulho de caixa! E quando fecha o dia, solta confete na tela!", el: "btn-concluir-dia" },
+            { t: "Olho Curioso 👁️", r: "Tem gente olhando? Clica no olho lá em cima (perto do relógio) que eu embaço todos os valores.", el: "btn-privacy" },
+            { t: "Categorias", r: "Na aba Casa, agora tem botões 'Mercado', 'Farmácia' pra facilitar a descrição.", el: "descCasa", aba:"casa" },
+            { t: "Como lanço um corte?", r: "É fácil! Na aba Salão, coloque o valor, escolha 'Serviço' e clique em LANÇAR.", el: "area-lancamento" },
+            { t: "Como funciona o Fiado?", r: "Se o cliente não pagou, marque a caixinha 'Marcar como FIADO'. O valor vai pro cartão roxo.", el: "card-fiado" },
+            { t: "Onde coloco despesas?", r: "Lance como 'Despesa/Saída' aqui no Salão. Se foi gasto pessoal, vá para a aba CASA.", el: "card-saida" },
+            { t: "Pra que serve Fechar o Dia?", r: "Todo dia, quando terminar, clique no botão preto 'FECHAR O DIA'.", el: "btn-concluir-dia" },
+            { t: "Como vejo o mês todo?", r: "Use os botões 'Ver Hoje' e 'Ver Mês' no topo.", el: "area-visao" }
+        ];
+
+        function abrirTutorial() {
+            document.getElementById('tutorial-overlay').style.display = 'flex';
+            document.getElementById('tutorial-menu').style.display = 'block';
+            document.getElementById('tutorial-resposta').style.display = 'none';
+            const lista = document.getElementById('faq-list');
+            lista.innerHTML = '';
+            duvidas.forEach((d, index) => {
+                lista.innerHTML += `<div class="btn-faq" onclick="verResposta(${index})">${d.t}</div>`;
+            });
+        }
+
+        function verResposta(index) {
+            const d = duvidas[index];
+            document.getElementById('tutorial-menu').style.display = 'none';
+            document.getElementById('tutorial-resposta').style.display = 'block';
+            document.getElementById('faq-titulo').innerText = d.t;
+            document.getElementById('faq-texto').innerText = d.r;
+            document.getElementById('img-pedro').src = "pedro2.png"; 
+
+            if(d.aba) mudarAba(d.aba);
+            
+            setTimeout(() => {
+                if(d.el) {
+                    const el = document.getElementById(d.el);
+                    if(el) {
+                        el.classList.add('destaque-tutorial');
+                        el.scrollIntoView({behavior: "smooth", block: "center"});
+                    }
+                }
+            }, 300);
+        }
+
+        function voltarMenu() {
+            document.getElementById('tutorial-menu').style.display = 'block';
+            document.getElementById('tutorial-resposta').style.display = 'none';
+            document.getElementById('img-pedro').src = "pedro1.png"; 
+            document.querySelectorAll('.destaque-tutorial').forEach(el => el.classList.remove('destaque-tutorial'));
+        }
+
+        function fecharTutorial() {
+            document.getElementById('tutorial-overlay').style.display = 'none';
+            voltarMenu();
+        }
+
+        // --- FUNCOES AUXILIARES ---
+        function setValor(val) {
+            document.getElementById('valorSalao').value = val;
+        }
+
+        function setDescCasa(txt) {
+            document.getElementById('descCasa').value = txt;
+        }
+
+        function alternarPrivacidade() {
+            document.body.classList.toggle('privacy-active');
+            const btn = document.getElementById('btn-privacy');
+            btn.innerText = document.body.classList.contains('privacy-active') ? '🔒' : '👁️';
+        }
+
+        // --- RELOGIO E TEMA ---
+        function atualizarRelogio() {
+            const agora = new Date();
+            const horas = String(agora.getHours()).padStart(2, '0');
+            const minutos = String(agora.getMinutes()).padStart(2, '0');
+            const segundos = String(agora.getSeconds()).padStart(2, '0');
+            const dia = String(agora.getDate()).padStart(2, '0');
+            const mes = String(agora.getMonth() + 1).padStart(2, '0');
+            
+            document.getElementById('relogio-hora').textContent = `${horas}:${minutos}:${segundos}`;
+            document.getElementById('relogio-data').textContent = `${dia}/${mes}`;
+        }
+
+        function carregarTema() {
+            const temaSalvo = localStorage.getItem('jm_tema');
+            if (temaSalvo === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('txt-tema-modal').textContent = '☀️';
+            }
+        }
+
+        function alternarTema() {
+            if (document.body.getAttribute('data-theme') === 'dark') {
+                document.body.removeAttribute('data-theme');
+                document.getElementById('txt-tema-modal').textContent = '🌙';
+                localStorage.setItem('jm_tema', 'light');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('txt-tema-modal').textContent = '☀️';
+                localStorage.setItem('jm_tema', 'dark');
+            }
+        }
+
+        function verificarBackup() {
+            const ultimoBackup = localStorage.getItem('jm_ultimo_backup');
+            if(ultimoBackup) {
+                const diff = Date.now() - parseInt(ultimoBackup);
+                const dias = diff / (1000 * 60 * 60 * 24);
+                if(dias > 7) {
+                    showToast('Pedro: Faz tempo que não salvamos backup! ☁️', 'warning');
+                }
+            }
+        }
+
+        // --- ESTRATEGIA (FIFA STYLE) ---
+        function gerarInsights() {
+            const hoje = document.getElementById('dataSalao').value;
+            const transacoesHoje = transacoes.filter(t => t.categoria === 'salao' && t.dataISO === hoje);
+            
+            let lucro = 0;
+            let servicos = 0;
+            let fiado = 0;
+            let produtos = 0;
+
+            transacoesHoje.forEach(t => {
+                if(t.status === 'pendente') fiado += t.valor;
+                else {
+                    if(t.tipo.includes('entrada')) {
+                        lucro += t.valor;
+                        if(t.tipo === 'entrada_servico') servicos++;
+                        if(t.tipo === 'entrada_produto') produtos += t.valor;
+                    } else {
+                        lucro -= t.valor;
+                    }
+                }
+            });
+
+            const lista = document.getElementById('lista-insights');
+            lista.innerHTML = '';
+            
+            const insights = [];
+
+            // 1. Analise de Lucro
+            if(lucro > 200) insights.push({c: 'verde', t: 'Lucro Alto', d: 'O desempenho financeiro hoje está excelente. Continue assim!'});
+            else if(lucro > 50) insights.push({c: 'amarela', t: 'Lucro Regular', d: 'O dia está pagando as contas, mas pode melhorar.'});
+            else insights.push({c: 'vermelha', t: 'Lucro Baixo', d: 'Atenção ao movimento. Tente chamar clientes no WhatsApp.'});
+
+            // 2. Analise de Fiado
+            if(fiado === 0) insights.push({c: 'verde', t: 'Zero Fiado', d: 'Perfeito! Nenhuma conta pendente hoje.'});
+            else if(fiado < 50) insights.push({c: 'amarela', t: 'Atenção ao Fiado', d: `Você tem R$ ${fiado.toFixed(2)} para receber depois.`});
+            else insights.push({c: 'vermelha', t: 'Fiado Crítico', d: 'Cuidado! O valor pendente está muito alto hoje.'});
+
+            // 3. Analise de Movimento
+            if(servicos >= 5) insights.push({c: 'verde', t: 'Casa Cheia', d: 'Muitos cortes realizados hoje. Ritmo de campeão!'});
+            else insights.push({c: 'amarela', t: 'Movimento Calmo', d: 'Aproveite o tempo livre para limpar ou divulgar o trabalho.'});
+
+            // 4. Dica Geral (Aleatória)
+            const dicasGerais = [
+                {c: 'amarela', t: 'Estoque', d: 'Verifique se as toalhas e lâminas estão em dia para amanhã.'},
+                {c: 'verde', t: 'Fidelidade', d: 'Clientes satisfeitos sempre voltam. Ofereça uma água ou café.'},
+                {c: 'amarela', t: 'Economia', d: 'Lembre-se de apagar luzes que não estão sendo usadas.'},
+                {c: 'verde', t: 'Organização', d: 'Manter a bancada limpa passa profissionalismo.'}
+            ];
+            insights.push(dicasGerais[Math.floor(Math.random() * dicasGerais.length)]);
+
+            // Renderizar
+            insights.forEach(i => {
+                let corClass = 'b-verde';
+                if(i.c === 'amarela') corClass = 'b-amarela';
+                if(i.c === 'vermelha') corClass = 'b-vermelha';
+
+                lista.innerHTML += `
+                <div class="news-item">
+                    <div class="bolinha-fifa ${corClass}"></div>
+                    <div class="news-content">
+                        <h4>${i.t}</h4>
+                        <p>${i.d}</p>
+                    </div>
+                </div>`;
+            });
+        }
+
+        // --- CORE ---
+        window.onload = function() {
+            // Frase Aleatória do Loader
+            const fraseRand = frasesPedro[Math.floor(Math.random() * frasesPedro.length)];
+            document.getElementById('loader-phrase').innerText = fraseRand;
+
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('data-verificacao').value = hoje;
+            document.getElementById('dataSalao').value = hoje;
+            document.getElementById('dataCasa').value = hoje;
+            document.getElementById('nova-conta-data').value = hoje;
+            
+            setInterval(atualizarRelogio, 1000);
+            atualizarRelogio();
+            carregarTema();
+            aplicarVolume();
+
+            setTimeout(() => { document.getElementById('loader-bar').style.width = '100%'; }, 100);
+            setTimeout(() => {
+                document.getElementById('pro-loader').classList.add('finish-loading');
+                confirmarDataInicial();
+                verificarBackup(); 
+            }, 2500);
+        };
+
+        function confirmarDataInicial() {
+            const data = document.getElementById('data-verificacao').value;
+            if(!data) return;
+            document.getElementById('dataSalao').value = data;
+            document.getElementById('dataCasa').value = data;
+            
+            document.getElementById('modal-calendario').style.display = 'none';
+            atualizarTela();
+            renderizarFixas();
+        }
+
+        function mudarAba(aba) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById('tab-' + aba).classList.add('active');
+            document.getElementById('nav-' + aba).classList.add('active');
+            window.scrollTo({top:0, behavior:'smooth'});
+            
+            if(aba==='historico') renderizarHistorico();
+            if(aba==='estrategia') gerarInsights();
+        }
+
+        function mudarVisao(tipo) {
+            visaoAtual = tipo;
+            document.querySelectorAll('.segment-btn').forEach(b => b.classList.remove('active'));
+            if(tipo === 'hoje') {
+                document.getElementById('seg-hoje').classList.add('active');
+                document.getElementById('titulo-lucro').innerText = 'Lucro Líquido (Hoje)';
+            } else {
+                document.getElementById('seg-mes').classList.add('active');
+                document.getElementById('titulo-lucro').innerText = 'Lucro Líquido (Mês)';
+            }
+            atualizarTela();
+        }
+
+        function verificarTipo() {
+            const tipo = document.getElementById('tipoSalao').value;
+            const containerDesc = document.getElementById('container-desc');
+            const grupoPendente = document.getElementById('grupoPendente');
+            const descInput = document.getElementById('descSalao');
+
+            if (tipo === 'entrada_total') {
+                containerDesc.style.display = 'none';
+                grupoPendente.style.display = 'none'; 
+                // CORREÇÃO: Removendo a data do nome para evitar duplicação no histórico
+                descInput.value = `💰 FECHAMENTO DE CAIXA`;
+            } else if (tipo === 'saida') {
+                containerDesc.style.display = 'block';
+                descInput.value = '';
+                grupoPendente.style.display = 'none';
+                document.getElementById('checkPendente').checked = false;
+            } else {
+                containerDesc.style.display = 'block';
+                descInput.value = '';
+                grupoPendente.style.display = 'flex';
+            }
+        }
+
+        function toggleCheck() {
+            const chk = document.getElementById('checkPendente');
+            chk.checked = !chk.checked;
+        }
+
+        function adicionar(origem) {
+            let desc = document.getElementById('descSalao').value;
+            let valor = parseFloat(document.getElementById('valorSalao').value);
+            let tipo = document.getElementById('tipoSalao').value;
+            let data = document.getElementById('dataSalao').value;
+            let isPendente = false;
+
+            if (origem === 'casa') {
+                desc = document.getElementById('descCasa').value;
+                valor = parseFloat(document.getElementById('valorCasa').value);
+                tipo = 'saida';
+                data = document.getElementById('dataCasa').value;
+            } else {
+                if (tipo === 'entrada_total' && !desc) {
+                    // Nome padrão fixo sem data, pois a data vai no subtítulo
+                    desc = `💰 FECHAMENTO DE CAIXA`;
+                }
+                if (document.getElementById('checkPendente').checked && tipo !== 'saida' && tipo !== 'entrada_total') isPendente = true;
+            }
+
+            if (!desc || isNaN(valor) || !data) { showToast('Preencha os campos!', 'error'); return; }
+
+            // LOGICA COMEMORAÇÃO - ALTERADO PARA 500
+            if(origem === 'salao' && tipo.includes('entrada') && valor > 500) {
+                const overlay = document.getElementById('overlay-celebracao');
+                overlay.style.display = 'flex';
+                setTimeout(() => { overlay.style.display = 'none'; }, 3000);
+            }
+
+            // SOM
+            if(tipo.includes('entrada')) {
+                audioCaixa.currentTime = 0; audioCaixa.play().catch(e=>{});
+            } else {
+                audioPapel.currentTime = 0; audioPapel.play().catch(e=>{});
+            }
+
+            transacoes.unshift({
+                id: Date.now(), desc, valor, categoria: origem, tipo,
+                status: isPendente ? 'pendente' : 'pago',
+                dataDisplay: data.split('-').reverse().join('/'), dataISO: data
+            });
+
+            localStorage.setItem('jm_financas_v28', JSON.stringify(transacoes));
+            atualizarTela();
+            showToast('Lançamento Salvo!', 'success');
+
+            if(origem === 'casa') renderizarFixas();
+
+            if(origem === 'salao') {
+                document.getElementById('valorSalao').value = '';
+                if(tipo !== 'entrada_total') document.getElementById('descSalao').value = '';
+                document.getElementById('checkPendente').checked = false;
+            } else {
+                document.getElementById('valorCasa').value = '';
+                document.getElementById('descCasa').value = '';
+            }
+        }
+
+        function receber(id, valor) {
+            if(confirm(`💰 Confirmar recebimento de R$ ${valor.toFixed(2)}?`)) {
+                const idx = transacoes.findIndex(t => t.id === id);
+                if(idx > -1) {
+                    transacoes[idx].status = 'pago';
+                    localStorage.setItem('jm_financas_v28', JSON.stringify(transacoes));
+                    atualizarTela();
+                    audioCaixa.currentTime = 0; audioCaixa.play().catch(e=>{});
+                    showToast('Pagamento Confirmado!', 'success');
+                }
+            }
+        }
+
+        function renderizarFixas() {
+            const div = document.getElementById('listaFixas'); div.innerHTML = '';
+            const dataSelecionada = document.getElementById('dataCasa').value;
+            const mesAtual = dataSelecionada.substring(0, 7); 
+            const diaHoje = parseInt(dataSelecionada.split('-')[2]);
+            let temContaHoje = false;
+
+            contasFixas.forEach(c => {
+                const diaConta = parseInt(c.dia);
+                const jaPago = transacoes.some(t => 
+                    t.desc === c.desc && 
+                    t.dataISO.startsWith(mesAtual) && 
+                    t.tipo === 'saida'
+                );
+
+                const venceHoje = (!jaPago && diaConta === diaHoje);
+                if(venceHoje) temContaHoje = true;
+                
+                let classeExtra = '';
+                let statusMsg = `Dia ${c.dia} • R$ ${c.valor.toFixed(2)}`;
+                let btnHtml = '';
+
+                if (jaPago) {
+                    classeExtra = 'conta-paga';
+                    statusMsg += ' <span class="badge-pago">PAGO ✅</span>';
+                    btnHtml = `<button disabled style="border:none; background:none; color:#2ecc71; font-weight:bold; margin-right:5px; opacity:0.7;">Ok</button>`;
+                } else {
+                    if (venceHoje) {
+                        classeExtra = 'vencendo-hoje';
+                        statusMsg += '<br>⚠️ PAGAR AGORA!';
+                    }
+                    btnHtml = `<button onclick="lancarFixa(${c.id})" style="border:none; background:${venceHoje ? '#c0392b' : 'var(--info-bg)'}; color:${venceHoje ? 'white' : 'var(--info)'}; padding:8px 12px; border-radius:8px; font-weight:bold; cursor:pointer; margin-right:5px;">Pagar</button>`;
+                }
+                
+                div.innerHTML += `
+                <div class="item ${classeExtra}">
+                    <div style="flex:1;">
+                        <strong>${c.desc} ${venceHoje ? '<span class="alert-badge">HOJE!</span>' : ''}</strong>
+                        <small style="color:${venceHoje ? 'red' : 'var(--text-secondary)'}; font-weight:${venceHoje ? 'bold' : 'normal'}; display:block;">
+                            ${statusMsg}
+                        </small>
+                    </div>
+                    <div>
+                        ${btnHtml}
+                        <button onclick="delFixa(${c.id})" style="border:none; background:none; color:var(--text-secondary);">x</button>
+                    </div>
+                </div>`;
+            });
+
+            // LOGICA DA NOTIFICACAO FIXA
+            if(temContaHoje && !notificacaoFechada) {
+                document.getElementById('notificacao-fixa').style.display = 'flex';
+            } else {
+                document.getElementById('notificacao-fixa').style.display = 'none';
+            }
+        }
+
+        function atualizarTela() {
+            const listaSalao = document.getElementById('listaSalao');
+            const listaCasa = document.getElementById('listaCasa');
+            listaSalao.innerHTML = ''; listaCasa.innerHTML = '';
+            
+            let sServicos=0, sProdutos=0, sTotal=0, sSaida=0, sCasa=0, sPendente=0;
+            const hojeISO = document.getElementById('dataSalao').value;
+
+            transacoes.forEach(t => {
+                let mostrar = true;
+                if (t.categoria === 'salao' && visaoAtual === 'hoje' && t.dataISO !== hojeISO) mostrar = false;
+
+                if (t.categoria === 'salao') {
+                    if (t.status === 'pendente') {
+                        sPendente += t.valor;
+                    } else if (mostrar || visaoAtual === 'mes') {
+                        let deveSomar = (visaoAtual === 'hoje') ? (t.dataISO === hojeISO) : true;
+                        if(deveSomar) {
+                            if(t.tipo === 'entrada_servico') sServicos += t.valor;
+                            else if(t.tipo === 'entrada_produto') sProdutos += t.valor;
+                            else if(t.tipo === 'entrada_total') sTotal += t.valor; 
+                            else sSaida += t.valor;
+                        }
+                    }
+                } else {
+                    sCasa += t.valor;
+                }
+
+                if ((t.categoria === 'salao' && !mostrar)) return;
+
+                const el = document.createElement('div');
+                el.className = 'item';
+                
+                let icone = '✂️'; let colorClass = 'text-green'; let sinal = '+';
+                let bgIcon = 'var(--success-bg)';
+                let corTextoValor = 'var(--success)';
+
+                if(t.tipo === 'entrada_produto') { icone='🧴'; bgIcon='var(--produto-bg)'; corTextoValor='var(--produto)'; }
+                if(t.tipo === 'entrada_total') { icone='💰'; bgIcon='var(--info-bg)'; corTextoValor='var(--info)'; }
+                if(t.tipo === 'saida') { icone='💸'; sinal='-'; bgIcon='var(--danger-bg)'; corTextoValor='var(--danger)'; }
+                
+                let actionBtn = `<button onclick="remover(${t.id})" style="background:none; border:none; color:var(--text-secondary); font-size:1.2rem;">&times;</button>`;
+                
+                if(t.status === 'pendente') {
+                    icone='⚠️'; sinal=''; bgIcon='var(--fiado-bg)'; corTextoValor='var(--fiado)';
+                    actionBtn = `<button onclick="receber(${t.id}, ${t.valor})" style="background:var(--success); color:white; border:none; padding:5px 10px; border-radius:6px; font-weight:bold; margin-right:10px;">RECEBER</button>` + actionBtn;
+                    el.style.borderLeft = "4px solid var(--fiado)";
+                }
+
+                // CORREÇÃO VISUAL: Se for Fechamento, destaca a data e não mostra data pequena repetida
+                let htmlData = `<small style="display:block; color:var(--text-secondary);">${t.dataDisplay}</small>`;
+                if(t.tipo === 'entrada_total') {
+                    htmlData = `<span class="data-destaque">${t.dataDisplay}</span>`;
+                }
+
+                el.innerHTML = `
+                    <div class="item-valor" style="display:flex; align-items:center; flex:1;">
+                        <div class="item-icon" style="background:${bgIcon}">${icone}</div>
+                        <div><strong>${t.desc}</strong>${htmlData}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div class="valor" style="font-weight:bold; margin-right:10px; color:${corTextoValor};">${sinal} R$ ${t.valor.toFixed(2)}</div>
+                    </div>
+                    ${actionBtn}
+                `;
+
+                if(t.categoria==='salao') listaSalao.appendChild(el);
+                else listaCasa.appendChild(el);
+            });
+
+            let servicosExibicao = sServicos + sTotal;
+
+            document.getElementById('totalServicos').innerText = `R$ ${servicosExibicao.toFixed(2)}`;
+            document.getElementById('totalProdutos').innerText = `R$ ${sProdutos.toFixed(2)}`;
+            document.getElementById('saidasSalao').innerText = `R$ ${sSaida.toFixed(2)}`;
+            document.getElementById('totalPendente').innerText = `R$ ${sPendente.toFixed(2)}`;
+            
+            let lucroReal = (sServicos + sProdutos + sTotal) - sSaida;
+            document.getElementById('saldoSalao').innerText = `R$ ${lucroReal.toFixed(2)}`;
+            document.getElementById('saldoCasa').innerText = `R$ ${sCasa.toFixed(2)}`;
+        }
+
+        function remover(id) {
+            if(confirm('Tem certeza que deseja apagar?')) {
+                transacoes = transacoes.filter(t => t.id !== id);
+                localStorage.setItem('jm_financas_v28', JSON.stringify(transacoes));
+                atualizarTela();
+                renderizarFixas();
+            }
+        }
+
+        function concluirDia() {
+            const hoje = document.getElementById('dataSalao').value;
+            const doDia = transacoes.filter(t => t.categoria === 'salao' && t.dataISO === hoje && t.status !== 'pendente');
+            let lucro = 0; doDia.forEach(t => t.tipo.includes('entrada') ? lucro+=t.valor : lucro-=t.valor);
+
+            if(confirm(`✅ FECHAR O DIA?\n\nLucro: R$ ${lucro.toFixed(2)}\n\nIr para amanhã?`)) {
+                
+                if(lucro > 0) dispararConfete();
+                
+                // TELA DE VERSICULO
+                const overlay = document.getElementById('overlay-fechamento');
+                const v = versiculos[Math.floor(Math.random() * versiculos.length)];
+                document.getElementById('texto-versiculo-dia').innerText = `"${v.t}"`;
+                document.getElementById('ref-versiculo-dia').innerText = v.r;
+                
+                overlay.style.display = 'flex';
+
+                // AGUARDA 4 SEGUNDOS ANTES DE VIRAR O DIA
+                setTimeout(() => {
+                    const d = new Date(hoje); d.setDate(d.getDate() + 1);
+                    const amanha = d.toISOString().split('T')[0];
+                    document.getElementById('dataSalao').value = amanha;
+                    mudarVisao('hoje');
+                    showToast('Dia Concluído!', 'success');
+                    overlay.style.display = 'none';
+                }, 4000);
+            }
+        }
+
+        function dispararConfete() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            let particles = [];
+            for(let i=0; i<100; i++) {
+                particles.push({
+                    x: Math.random()*canvas.width, y: Math.random()*canvas.height - canvas.height,
+                    color: `hsl(${Math.random()*360}, 100%, 50%)`,
+                    size: Math.random()*10+5, speed: Math.random()*5+2
+                });
+            }
+            function draw() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                particles.forEach((p, i) => {
+                    p.y += p.speed;
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x, p.y, p.size, p.size);
+                });
+                if(particles.some(p => p.y < canvas.height)) requestAnimationFrame(draw);
+                else ctx.clearRect(0,0,canvas.width,canvas.height);
+            }
+            draw();
+        }
+
+        function fecharMes() {
+            if(!confirm("⚠️ ATENÇÃO: Deseja fechar o mês e arquivar?")) return;
+            const nome = prompt("Nome do Mês (Ex: Março 2026):");
+            if(!nome) return;
+
+            let totais = { serv:0, prod:0, total:0, saida:0, casa:0 };
+            let diasMap = {}; 
+
+            transacoes.forEach(t => {
+                if(t.categoria==='salao' && t.status!=='pendente') {
+                    if(t.tipo==='entrada_servico') totais.serv+=t.valor;
+                    else if(t.tipo==='entrada_produto') totais.prod+=t.valor;
+                    else if(t.tipo==='entrada_total') totais.total+=t.valor;
+                    else totais.saida+=t.valor;
+
+                    if(!diasMap[t.dataDisplay]) diasMap[t.dataDisplay] = 0;
+                    if(t.tipo.includes('entrada')) diasMap[t.dataDisplay] += t.valor; else diasMap[t.dataDisplay] -= t.valor;
+
+                } else if (t.categoria==='casa') totais.casa+=t.valor;
+            });
+
+            // SOBRA REAL = Tudo que entrou - (Saida Salao + Saida Casa)
+            let lucroLiquido = (totais.serv + totais.prod + totais.total) - totais.saida - totais.casa;
+            let listaDias = Object.keys(diasMap).map(data => { return {data: data, valor: diasMap[data]} });
+
+            historicoFechado.unshift({ 
+                id: Date.now(), 
+                nome, 
+                data: new Date().toLocaleDateString(), 
+                totais: {...totais, lucro: lucroLiquido},
+                detalhes: listaDias 
+            });
+
+            localStorage.setItem('jm_historico_v17', JSON.stringify(historicoFechado));
+            transacoes = transacoes.filter(t => t.status === 'pendente');
+            localStorage.setItem('jm_financas_v28', JSON.stringify(transacoes));
+            
+            atualizarTela();
+            renderizarHistorico();
+            showToast('Mês Arquivado com Sucesso!', 'success');
+        }
+
+        function renderizarHistorico() {
+            const div = document.getElementById('lista-meses-fechados'); div.innerHTML='';
+            historicoFechado.forEach(h => {
+                div.innerHTML += `
+                <div class="item" style="display:block;">
+                    <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                        <div>
+                            <strong>${h.nome}</strong><br>
+                            <small style="color:var(--text-secondary);">${h.data}</small>
+                        </div>
+                        <div class="valor" style="font-weight:bold; font-size:1.2rem; color:var(--success);">
+                            R$ ${h.totais.lucro.toFixed(2)}
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <button onclick='verDetalhes(${JSON.stringify(h)})' style="flex:1; background:var(--input-bg); color:var(--text-primary); border:none; padding:10px; border-radius:10px;">📄 Ver Detalhes</button>
+                        <button onclick="if(confirm('Apagar?')) { historicoFechado=historicoFechado.filter(x=>x.id!==${h.id}); localStorage.setItem('jm_historico_v17', JSON.stringify(historicoFechado)); renderizarHistorico(); }" style="background:var(--danger-bg); color:var(--danger); border:none; padding:10px 15px; border-radius:10px;">🗑️</button>
+                    </div>
+                </div>`;
+            });
+        }
+
+        function verDetalhes(hist) {
+            const container = document.getElementById('conteudo-detalhes');
+            document.getElementById('titulo-detalhes').innerText = "Resumo: " + hist.nome;
+            container.innerHTML = '';
+
+            let servTotal = hist.totais.serv + hist.totais.total;
+            container.innerHTML += `
+            <div style="margin-bottom:20px; background:var(--input-bg); padding:15px; border-radius:16px; border:1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--text-secondary);">Serviços (+Total):</span> <strong>R$ ${servTotal.toFixed(2)}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--text-secondary);">Produtos:</span> <strong>R$ ${hist.totais.prod.toFixed(2)}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--danger);">(-) Saídas Salão:</span> <span style="color:var(--danger); font-weight:bold;">- R$ ${hist.totais.saida.toFixed(2)}</span></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--danger);">(-) Saídas Casa:</span> <span style="color:var(--danger); font-weight:bold;">- R$ ${hist.totais.casa.toFixed(2)}</span></div>
+                <hr style="border:0; border-top:2px dashed #ddd; margin:10px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:1.1rem;"><span style="font-weight:800;">SOBRA FINAL:</span> <span style="color:var(--success); font-weight:800;">R$ ${hist.totais.lucro.toFixed(2)}</span></div>
+            </div>
+            <h4 style="margin:20px 0 10px 0; color:var(--text-secondary); font-size:0.9rem; text-transform:uppercase;">Diário (Salão)</h4>`;
+
+            if(!hist.detalhes || hist.detalhes.length === 0) {
+                container.innerHTML += "<p style='color:var(--text-secondary); text-align:center;'>Sem detalhes diários.</p>";
+            } else {
+                hist.detalhes.forEach(d => {
+                    container.innerHTML += `
+                    <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border-color);">
+                        <span>📅 ${d.data}</span>
+                        <strong style="color:${d.valor>=0?'var(--success)':'var(--danger)'}">R$ ${d.valor.toFixed(2)}</strong>
+                    </div>`;
+                });
+            }
+            document.getElementById('modal-detalhes').style.display = 'flex';
+        }
+
+        function showToast(msg, tipo) {
+            const t = document.createElement('div'); t.className=`toast ${tipo}`; t.innerHTML=`<span>${tipo==='success'?'✅':'⚠️'}</span><span>${msg}</span>`;
+            document.getElementById('toast-container').appendChild(t);
+            setTimeout(()=>t.remove(), 3000);
+            if(navigator.vibrate) navigator.vibrate(50);
+        }
+        function abrirModalConta() { document.getElementById('modal-conta').style.display='flex'; }
+        function fecharModalConta() { document.getElementById('modal-conta').style.display='none'; }
+        function salvarContaModal() {
+            const n=document.getElementById('nova-conta-nome').value; const v=document.getElementById('nova-conta-valor').value; const d=document.getElementById('nova-conta-data').value;
+            if(!n||!v||!d) return showToast('Preencha tudo', 'error');
+            contasFixas.push({id:Date.now(), desc:n, valor:parseFloat(v), dia: d.split('-')[2]});
+            localStorage.setItem('jm_fixas_v5', JSON.stringify(contasFixas));
+            renderizarFixas(); fecharModalConta();
+        }
+        function delFixa(id) { if(confirm('Excluir conta?')){ contasFixas=contasFixas.filter(c=>c.id!==id); localStorage.setItem('jm_fixas_v5', JSON.stringify(contasFixas)); renderizarFixas(); }}
+        function lancarFixa(id) {
+            const c=contasFixas.find(x=>x.id===id);
+            if(confirm(`Pagar ${c.desc}?`)){
+                transacoes.unshift({ id:Date.now(), desc:c.desc, valor:c.valor, categoria:'casa', tipo:'saida', status:'pago', dataDisplay:document.getElementById('dataCasa').value.split('-').reverse().join('/'), dataISO:document.getElementById('dataCasa').value });
+                localStorage.setItem('jm_financas_v28', JSON.stringify(transacoes)); 
+                atualizarTela(); 
+                renderizarFixas(); 
+                showToast('Paga!', 'success');
+            }
+        }
+
+        function fazerBackup() {
+            // SALVA A DATA DO ULTIMO BACKUP
+            localStorage.setItem('jm_ultimo_backup', Date.now());
+
+            const dadosBackup = {
+                transacoes: transacoes,
+                fixas: contasFixas,
+                historico: historicoFechado,
+                versao: '2.0',
+                dataBackup: new Date().toLocaleDateString()
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosBackup));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "Backup_JMFinanceiro_" + new Date().toISOString().split('T')[0] + ".json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            showToast('Backup Baixado!', 'success');
+        }
+
+        function triggerRestore() {
+            document.getElementById('input-restore').click();
+        }
+
+        function restaurarDados(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const dados = JSON.parse(e.target.result);
+                    if (dados.transacoes && dados.fixas && dados.historico) {
+                        if(confirm('⚠️ ATENÇÃO: Isso vai substituir todos os dados atuais pelos dados do arquivo. Deseja continuar?')) {
+                            localStorage.setItem('jm_financas_v28', JSON.stringify(dados.transacoes));
+                            localStorage.setItem('jm_fixas_v5', JSON.stringify(dados.fixas));
+                            localStorage.setItem('jm_historico_v17', JSON.stringify(dados.historico));
+                            localStorage.setItem('jm_ultimo_backup', Date.now()); // Reseta aviso de backup
+                            alert('✅ Dados restaurados com sucesso! A página será recarregada.');
+                            location.reload();
+                        }
+                    } else {
+                        alert('❌ Arquivo inválido ou antigo.');
+                    }
+                } catch (err) {
+                    alert('❌ Erro ao ler arquivo.');
+                }
+            };
+            reader.readAsText(file);
+        }
+    </script>
+</body>
+</html>
