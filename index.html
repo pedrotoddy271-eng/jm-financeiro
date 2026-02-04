@@ -15,11 +15,13 @@
 
     <style>
         :root {
+            /* --- VARIAVEIS MODO CLARO (PADRÃO) --- */
             --bg-body: #f8f9fa;
             --surface-solid: #ffffff;
+            --text-primary: #1a1a1a;
+            --text-secondary: #6c757d;
             --gold-start: #d4af37; --gold-end: #b48811;
             --gold-gradient: linear-gradient(135deg, var(--gold-start), var(--gold-end));
-            --text-primary: #1a1a1a; --text-secondary: #6c757d;
             
             --success: #27ae60; --success-bg: #eafaf1;
             --danger: #c0392b; --danger-bg: #fadbd8;
@@ -30,6 +32,29 @@
             --radius-xl: 24px; --radius-lg: 16px;
             --shadow-soft: 0 8px 30px rgba(0,0,0,0.04);
             --nav-height: 80px;
+            
+            --border-color: #f0f0f0;
+            --input-bg: #f4f6f8;
+            --header-bg: rgba(255,255,255,0.8);
+        }
+
+        /* --- VARIAVEIS MODO ESCURO --- */
+        [data-theme="dark"] {
+            --bg-body: #050505;
+            --surface-solid: #18181b;
+            --text-primary: #f4f4f5;
+            --text-secondary: #a1a1aa;
+            
+            --success-bg: #0f291e;
+            --danger-bg: #33100e;
+            --info-bg: #0e1f2b;
+            --fiado-bg: #220f2b;
+            --produto-bg: #0b2626;
+
+            --shadow-soft: 0 8px 30px rgba(0,0,0,0.5);
+            --border-color: #27272a;
+            --input-bg: #27272a;
+            --header-bg: rgba(24, 24, 27, 0.85);
         }
         
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -39,9 +64,60 @@
             background-color: var(--bg-body); 
             background-image: radial-gradient(circle at 10% 20%, rgba(212, 175, 55, 0.05) 0%, transparent 20%);
             color: var(--text-primary); margin: 0; padding-bottom: calc(var(--nav-height) + 40px); overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* --- LOADER ELITE --- */
+        /* --- MODO OLHO CURIOSO (BLUR) --- */
+        body.privacy-active .valor, 
+        body.privacy-active .item-valor,
+        body.privacy-active .text-green,
+        body.privacy-active .text-red,
+        body.privacy-active .text-primary,
+        body.privacy-active .text-prod {
+            filter: blur(8px);
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* --- CONFETE CANVAS --- */
+        #confetti-canvas {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 99999;
+        }
+
+        /* --- NOVOS ESTILOS DE BOTÕES --- */
+        .quick-btns-container { display: flex; gap: 8px; margin-bottom: 15px; }
+        .quick-btn {
+            flex: 1; padding: 12px; border: 1px solid var(--border-color); background: var(--input-bg);
+            border-radius: 12px; color: var(--text-primary); font-weight: 700; cursor: pointer;
+            transition: 0.2s; font-size: 1rem;
+        }
+        .quick-btn:active { background: var(--gold-start); color: white; transform: scale(0.95); }
+
+        .category-scroll {
+            display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 10px;
+            -webkit-overflow-scrolling: touch; scrollbar-width: none;
+        }
+        .category-scroll::-webkit-scrollbar { display: none; }
+        .cat-btn {
+            white-space: nowrap; padding: 8px 16px; border-radius: 20px; border: 1px solid var(--border-color);
+            background: var(--surface-solid); color: var(--text-secondary); font-size: 0.85rem; font-weight: 600;
+            cursor: pointer; display: flex; align-items: center; gap: 5px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .cat-btn:active { background: var(--info); color: white; border-color: var(--info); }
+
+        /* --- AJUSTES MODO ESCURO --- */
+        [data-theme="dark"] .quick-btn { background: #2a2a2a; border-color: #444; }
+        [data-theme="dark"] .cat-btn { background: #2a2a2a; color: #ddd; border-color: #444; }
+        [data-theme="dark"] .card.lucro { background: linear-gradient(145deg, #222, #1a1a1a); border: 1px solid #333; }
+        [data-theme="dark"] .bottom-nav { background: rgba(30,30,30,0.95); box-shadow: 0 -5px 20px rgba(0,0,0,0.3); }
+        [data-theme="dark"] .modal-box, [data-theme="dark"] .ajudante-container-fixa { background: #1f1f1f; border: 1px solid #333; }
+        [data-theme="dark"] .btn-faq { background: #2a2a2a; border-color: #333; color: #ddd; }
+        [data-theme="dark"] .toast { background: #222; color: #fff; }
+        [data-theme="dark"] .nav-item { color: #555; }
+        [data-theme="dark"] .nav-item.active { color: var(--gold-end); }
+
+        /* --- LOADER --- */
         #pro-loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; background: #111; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: opacity 0.6s, visibility 0.6s; }
         #pro-loader.finish-loading { opacity: 0; visibility: hidden; pointer-events: none; }
         .loader-content { text-align: center; animation: float 3s ease-in-out infinite; }
@@ -53,13 +129,18 @@
 
         /* --- UI GERAL --- */
         #toast-container { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); z-index: 11000; width: 90%; max-width: 400px; pointer-events: none; }
-        .toast { background: white; padding: 16px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px; margin-bottom: 10px; animation: slideDown 0.4s; border-left: 5px solid #333; pointer-events: auto; }
+        .toast { background: var(--surface-solid); padding: 16px; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: flex; align-items: center; gap: 12px; margin-bottom: 10px; animation: slideDown 0.4s; border-left: 5px solid #333; pointer-events: auto; }
         .toast.success { border-left-color: var(--success); } .toast.error { border-left-color: var(--danger); }
         @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        header { background: rgba(255,255,255,0.8); backdrop-filter: blur(10px); padding: 15px 25px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); }
+        header { background: var(--header-bg); backdrop-filter: blur(10px); padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid rgba(0,0,0,0.05); }
         .header-logo h1 { margin: 0; font-size: 1.2rem; background: var(--gold-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
-        .btn-ajuda { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #eee; background: white; color: var(--gold-end); font-weight: bold; cursor: pointer; }
+        
+        .relogio-container { text-align: right; margin-right: 10px; }
+        .relogio-hora { font-weight: 800; font-size: 1rem; color: var(--text-primary); line-height: 1; }
+        .relogio-data { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.5px; }
+        .btn-icon-header { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--border-color); background: var(--surface-solid); color: var(--text-primary); display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.1rem; }
+        .btn-ajuda { width: 35px; height: 35px; border-radius: 50%; border: 1px solid var(--border-color); background: var(--surface-solid); color: var(--gold-end); font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
         .container { padding: 20px; max-width: 600px; margin: 0 auto; }
         .tab-content { display: none; animation: fadeIn 0.4s; } .tab-content.active { display: block; }
@@ -67,48 +148,47 @@
 
         /* --- DASHBOARD --- */
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px; }
-        .card { background: var(--surface-solid); padding: 15px; border-radius: var(--radius-lg); text-align: center; box-shadow: var(--shadow-soft); border: 1px solid #f0f0f0; display: flex; flex-direction: column; justify-content: center; min-height: 100px; transition: transform 0.3s, box-shadow 0.3s; }
+        .card { background: var(--surface-solid); padding: 15px; border-radius: var(--radius-lg); text-align: center; box-shadow: var(--shadow-soft); border: 1px solid var(--border-color); display: flex; flex-direction: column; justify-content: center; min-height: 100px; transition: transform 0.3s, box-shadow 0.3s; }
         
         .card.full { grid-column: span 2; padding: 20px; }
         .card.lucro { background: linear-gradient(145deg, #fff, #fffdf5); border: 1px solid rgba(212, 175, 55, 0.2); }
         .card.fiado { background: var(--fiado-bg); border: 1px solid rgba(142, 68, 173, 0.2); grid-column: span 2; }
         .card.fiado .valor { color: var(--fiado); }
-        .card.entrada-box { background: var(--success-bg); border: 1px solid #d4efdf; }
+        .card.entrada-box { background: var(--success-bg); border: 1px solid rgba(39, 174, 96, 0.2); }
         .card.entrada-box h3, .card.entrada-box .valor { color: var(--success); }
-        .card.saida-box { background: var(--danger-bg); border: 1px solid #fadbd8; }
+        .card.saida-box { background: var(--danger-bg); border: 1px solid rgba(192, 57, 43, 0.2); }
         .card.saida-box h3, .card.saida-box .valor { color: var(--danger); }
 
         .card h3 { margin: 0 0 5px; font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px; }
         .card .valor { font-size: 1.3rem; font-weight: 800; color: var(--text-primary); }
         .card.lucro .valor { color: #b48811; font-size: 2rem; }
 
-        .segmented-control { display: flex; background: #e0e0e0; padding: 4px; border-radius: 14px; margin-bottom: 20px; }
-        .segment-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #666; font-weight: 600; cursor: pointer; border-radius: 10px; transition: 0.3s; }
-        .segment-btn.active { background: white; color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .segmented-control { display: flex; background: var(--input-bg); padding: 4px; border-radius: 14px; margin-bottom: 20px; }
+        .segment-btn { flex: 1; padding: 10px; border: none; background: transparent; color: var(--text-secondary); font-weight: 600; cursor: pointer; border-radius: 10px; transition: 0.3s; }
+        .segment-btn.active { background: var(--surface-solid); color: var(--text-primary); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 
         /* --- FORM --- */
         .form-container { background: var(--surface-solid); padding: 20px; border-radius: var(--radius-xl); box-shadow: var(--shadow-soft); margin-bottom: 25px; transition: transform 0.3s; }
-        input, select { width: 100%; padding: 15px; background: #f4f6f8; border: 2px solid transparent; border-radius: 12px; margin-bottom: 12px; font-family: inherit; font-size: 1rem; outline: none; }
-        input:focus, select:focus { background: white; border-color: var(--gold-start); }
-        label { font-size: 0.75rem; color: #888; font-weight: 700; margin-left: 5px; text-transform: uppercase; }
+        input, select { width: 100%; padding: 15px; background: var(--input-bg); color: var(--text-primary); border: 2px solid transparent; border-radius: 12px; margin-bottom: 12px; font-family: inherit; font-size: 1rem; outline: none; transition: 0.3s; }
+        input:focus, select:focus { background: var(--surface-solid); border-color: var(--gold-start); }
+        label { font-size: 0.75rem; color: var(--text-secondary); font-weight: 700; margin-left: 5px; text-transform: uppercase; }
 
         .btn-main { width: 100%; padding: 18px; border: none; border-radius: 14px; font-weight: 800; text-transform: uppercase; color: white; background: var(--gold-gradient); box-shadow: 0 8px 20px -5px rgba(180, 136, 17, 0.4); cursor: pointer; transition: 0.2s; }
         .btn-main:active { transform: scale(0.98); }
         .btn-dark { background: #2d3436; box-shadow: 0 8px 20px -5px rgba(0,0,0,0.3); display: flex; justify-content: center; gap: 8px; margin-bottom: 20px; }
         
-        .check-container { display: flex; align-items: center; gap: 10px; background: var(--fiado-bg); padding: 12px; border-radius: 12px; margin-bottom: 15px; cursor: pointer; border: 1px solid #d2b4de; }
+        .check-container { display: flex; align-items: center; gap: 10px; background: var(--fiado-bg); padding: 12px; border-radius: 12px; margin-bottom: 15px; cursor: pointer; border: 1px solid rgba(142, 68, 173, 0.3); }
         .custom-check { width: 20px; height: 20px; border: 2px solid var(--fiado); border-radius: 5px; display: flex; align-items: center; justify-content: center; background: white; }
         input[type="checkbox"]:checked + .custom-check { background: var(--fiado); }
 
         /* --- LISTAS --- */
-        .item { display: flex; justify-content: space-between; align-items: center; background: white; padding: 15px; border-radius: 16px; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+        .item { display: flex; justify-content: space-between; align-items: center; background: var(--surface-solid); padding: 15px; border-radius: 16px; margin-bottom: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
         .item-icon { width: 35px; height: 35px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 1.1rem; }
-        .item.vencendo-hoje { border: 2px solid var(--danger); background: #fff5f5; animation: pulseRed 2s infinite; }
+        .item.vencendo-hoje { border: 2px solid var(--danger); background: var(--danger-bg); animation: pulseRed 2s infinite; }
         .alert-badge { background: var(--danger); color: white; padding: 4px 8px; border-radius: 6px; font-size: 0.7rem; font-weight: bold; margin-left: 8px; display: inline-block; }
         @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(231, 76, 60, 0); } 100% { box-shadow: 0 0 0 0 rgba(231, 76, 60, 0); } }
         
-        /* Estilo para conta paga */
-        .item.conta-paga { border: 1px solid #2ecc71; background: #f0fff4; opacity: 0.8; }
+        .item.conta-paga { border: 1px solid #2ecc71; background: var(--success-bg); opacity: 0.8; }
         .badge-pago { background: #2ecc71; color: white; padding: 3px 6px; border-radius: 5px; font-size: 0.65rem; font-weight: bold; margin-left: 5px; }
 
         /* --- NAV --- */
@@ -119,37 +199,36 @@
 
         /* --- MODAIS --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); backdrop-filter: blur(3px); z-index: 9000; display: none; justify-content: center; align-items: center; }
-        .modal-box { background: white; padding: 25px; border-radius: 25px; width: 85%; max-width: 350px; text-align: center; animation: zoomIn 0.3s; max-height: 80vh; overflow-y: auto; }
+        .modal-box { background: var(--surface-solid); padding: 25px; border-radius: 25px; width: 85%; max-width: 350px; text-align: center; animation: zoomIn 0.3s; max-height: 80vh; overflow-y: auto; color: var(--text-primary); }
         @keyframes zoomIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        /* --- TUTORIAL FIXO EM BAIXO --- */
+        /* --- TUTORIAL --- */
         #tutorial-overlay { align-items: flex-end; justify-content: center; padding-bottom: 0; }
         .ajudante-container-fixa {
-            background: white; width: 100%; max-width: 500px; 
+            background: var(--surface-solid); width: 100%; max-width: 500px; 
             border-top-left-radius: 30px; border-top-right-radius: 30px;
             padding: 20px; position: relative; text-align: center;
             box-shadow: 0 -10px 40px rgba(0,0,0,0.3);
             animation: slideUpTuto 0.4s ease-out;
+            color: var(--text-primary);
         }
         #img-pedro { 
             width: 220px; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
             z-index: 10005; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.2)); pointer-events: none;
         }
         .balao-menu { max-height: 50vh; overflow-y: auto; text-align: left; padding-top: 10px; }
-        
         .tutorial-list { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
         .btn-faq {
-            background: #f8f9fa; border: 1px solid #eee; padding: 12px 15px; border-radius: 12px;
-            text-align: left; font-weight: 600; color: #333; cursor: pointer;
+            background: var(--input-bg); border: 1px solid var(--border-color); padding: 12px 15px; border-radius: 12px;
+            text-align: left; font-weight: 600; color: var(--text-primary); cursor: pointer;
             display: flex; justify-content: space-between; align-items: center; transition: 0.2s;
         }
         .btn-faq:active { background: var(--gold-gradient); color: white; border-color: transparent; }
         .btn-faq::after { content: '👉'; font-size: 0.9rem; }
-
         .destaque-tutorial {
             position: relative; z-index: 10001; 
             box-shadow: 0 0 0 4px #fff, 0 0 0 8px var(--gold-start), 0 0 100px rgba(0,0,0,0.8) !important;
-            transform: scale(1.02); transition: 0.3s; background: white !important;
+            transform: scale(1.02); transition: 0.3s; background: var(--surface-solid) !important;
         }
         @keyframes slideUpTuto { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
@@ -157,6 +236,7 @@
 </head>
 <body>
 
+    <canvas id="confetti-canvas"></canvas>
     <div id="toast-container"></div>
     
     <div id="pro-loader">
@@ -171,7 +251,7 @@
     <div id="modal-calendario" class="modal-overlay">
         <div class="modal-box">
             <h3>📅 Iniciar Caixa</h3>
-            <p style="color:#777; font-size:0.9rem;">Selecione a data de trabalho:</p>
+            <p style="color:var(--text-secondary); font-size:0.9rem;">Selecione a data de trabalho:</p>
             <input type="date" id="data-verificacao" style="text-align:center;">
             <button class="btn-main" onclick="confirmarDataInicial()">Confirmar</button>
         </div>
@@ -194,7 +274,7 @@
                 <label>Vencimento</label><input type="date" id="nova-conta-data">
             </div>
             <button class="btn-main" style="background:var(--info);" onclick="salvarContaModal()">Salvar</button>
-            <button onclick="fecharModalConta()" style="margin-top:15px; border:none; background:none; color:#999;">Cancelar</button>
+            <button onclick="fecharModalConta()" style="margin-top:15px; border:none; background:none; color:var(--text-secondary);">Cancelar</button>
         </div>
     </div>
 
@@ -205,14 +285,14 @@
             <div class="balao-menu">
                 <div id="tutorial-menu">
                     <h3 style="margin:0 0 5px 0; color:var(--text-primary);">Fala Chefe! 💈</h3>
-                    <p style="color:#777; font-size:0.9rem; margin-bottom:15px;">Toque na dúvida para eu te mostrar:</p>
+                    <p style="color:var(--text-secondary); font-size:0.9rem; margin-bottom:15px;">Toque na dúvida para eu te mostrar:</p>
                     <div class="tutorial-list" id="faq-list"></div>
-                    <button onclick="fecharTutorial()" style="width:100%; padding:12px; margin-top:15px; background:#eee; border:none; border-radius:12px; color:#555;">Fechar Ajuda</button>
+                    <button onclick="fecharTutorial()" style="width:100%; padding:12px; margin-top:15px; background:var(--input-bg); border:none; border-radius:12px; color:var(--text-secondary);">Fechar Ajuda</button>
                 </div>
 
                 <div id="tutorial-resposta" style="display:none;">
                     <h4 id="faq-titulo" style="margin:0 0 10px 0; color:var(--gold-end);">...</h4>
-                    <p id="faq-texto" style="font-size:0.95rem; color:#444; line-height:1.6;">...</p>
+                    <p id="faq-texto" style="font-size:0.95rem; color:var(--text-primary); line-height:1.6;">...</p>
                     <button class="btn-main" onclick="voltarMenu()" style="padding:12px; margin-top:20px;">Entendi, voltar</button>
                 </div>
             </div>
@@ -221,7 +301,15 @@
 
     <header>
         <div class="header-logo"><h1>JM FINANCEIRO</h1></div>
-        <button class="btn-ajuda" onclick="abrirTutorial()">?</button>
+        <div style="display:flex; align-items:center; gap:8px;">
+            <div class="relogio-container">
+                <div class="relogio-hora" id="relogio-hora">00:00:00</div>
+                <div class="relogio-data" id="relogio-data">--/--</div>
+            </div>
+            <button class="btn-icon-header" onclick="alternarPrivacidade()" id="btn-privacy">👁️</button>
+            <button class="btn-icon-header" onclick="alternarTema()" id="btn-theme">🌙</button>
+            <button class="btn-ajuda" onclick="abrirTutorial()">?</button>
+        </div>
     </header>
 
     <div class="container">
@@ -266,6 +354,12 @@
 
             <div class="form-container" id="area-lancamento">
                 <h4 style="margin:0 0 15px 0;">Novo Lançamento</h4>
+
+                <div class="quick-btns-container">
+                    <button class="quick-btn" onclick="setValor(25)">R$ 25</button>
+                    <button class="quick-btn" onclick="setValor(45)">R$ 45</button>
+                    <button class="quick-btn" onclick="setValor(65)">R$ 65</button>
+                </div>
                 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
                     <div><label>Data</label><input type="date" id="dataSalao"></div>
@@ -299,9 +393,9 @@
         </div>
 
         <div id="tab-casa" class="tab-content">
-            <div class="card full" style="background:#ebf5fb; border-color:#d6eaf8; margin-bottom:20px;">
-                <h3 style="color:#2980b9;">Gasto Pessoal (Mês)</h3>
-                <div class="valor" style="color:#2980b9;" id="saldoCasa">R$ 0,00</div>
+            <div class="card full" style="background:var(--info-bg); border-color:var(--info); margin-bottom:20px;">
+                <h3 style="color:var(--info);">Gasto Pessoal (Mês)</h3>
+                <div class="valor" style="color:var(--info);" id="saldoCasa">R$ 0,00</div>
             </div>
 
             <div class="form-container" id="area-fixas">
@@ -318,6 +412,15 @@
                     <input type="date" id="dataCasa">
                     <input type="number" id="valorCasa" placeholder="Valor">
                 </div>
+                
+                <div class="category-scroll">
+                    <button class="cat-btn" onclick="setDescCasa('🛒 Mercado')">🛒 Mercado</button>
+                    <button class="cat-btn" onclick="setDescCasa('💊 Farmácia')">💊 Farmácia</button>
+                    <button class="cat-btn" onclick="setDescCasa('🍔 Comida')">🍔 Comida</button>
+                    <button class="cat-btn" onclick="setDescCasa('💡 Contas')">💡 Contas</button>
+                    <button class="cat-btn" onclick="setDescCasa('👗 Roupas')">👗 Roupas</button>
+                </div>
+
                 <input type="text" id="descCasa" placeholder="Descrição">
                 <button class="btn-main" style="background:linear-gradient(135deg, #3498db, #2980b9);" onclick="adicionar('casa')">Salvar Gasto</button>
             </div>
@@ -325,6 +428,16 @@
         </div>
 
         <div id="tab-historico" class="tab-content">
+            <div style="background:var(--surface-solid); padding:20px; border-radius:16px; margin-bottom:20px; text-align:center; border:1px solid var(--border-color); box-shadow:var(--shadow-soft);">
+                <h4 style="margin-top:0; color:var(--text-secondary);">Segurança dos Dados</h4>
+                <div style="display:flex; gap:10px;">
+                    <button class="btn-main" onclick="fazerBackup()" style="background:var(--info); flex:1; box-shadow:none;">☁️ Salvar Backup</button>
+                    <button class="btn-main" onclick="triggerRestore()" style="background:#333; flex:1; box-shadow:none;">📥 Recuperar Dados</button>
+                </div>
+                <input type="file" id="input-restore" style="display:none;" onchange="restaurarDados(this)" accept=".json">
+                <p style="font-size:0.8rem; color:var(--text-secondary); margin-bottom:0; margin-top:10px;">Salve o arquivo em um local seguro (WhatsApp, Drive).</p>
+            </div>
+
             <h3 style="text-align:center;">Relatórios Fechados</h3>
             <div id="lista-meses-fechados"></div>
         </div>
@@ -339,32 +452,33 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(reg => console.log('SW registrado!', reg))
-                    .catch(err => console.log('Erro SW:', err));
+                navigator.serviceWorker.register('./service-worker.js').catch(err => console.log('Erro SW:', err));
             });
         }
     </script>
 
     <script>
+        // --- SONS ---
+        const audioCaixa = new Audio('https://assets.mixkit.co/active_storage/sfx/2000/2000-preview.mp3');
+        const audioPapel = new Audio('https://assets.mixkit.co/active_storage/sfx/2571/2571-preview.mp3');
+
         // --- DADOS ---
         let transacoes = JSON.parse(localStorage.getItem('jm_financas_v28')) || [];
         let contasFixas = JSON.parse(localStorage.getItem('jm_fixas_v5')) || [];
         let historicoFechado = JSON.parse(localStorage.getItem('jm_historico_v17')) || [];
         let visaoAtual = 'hoje';
 
-        // --- SISTEMA DE DÚVIDAS DO PEDRO ---
+        // --- DÚVIDAS DO PEDRO ---
         const duvidas = [
-            { t: "Como lanço um corte?", r: "É fácil! Na aba Salão, coloque o valor, escolha 'Serviço' e clique em LANÇAR. Eu destaquei a área pra você.", el: "area-lancamento" },
-            { t: "Como funciona o Fiado?", r: "Se o cliente não pagou, marque a caixinha 'Marcar como FIADO'. O valor vai pro cartão roxo 'A Receber' e não soma no seu lucro hoje.", el: "card-fiado" },
-            { t: "Onde coloco despesas?", r: "Se gastou com o salão (lâmina, café), lance como 'Despesa/Saída' aqui no Salão. Se foi gasto pessoal, vá para a aba CASA.", el: "card-saida" },
-            { t: "Pra que serve Fechar o Dia?", r: "Todo dia, quando terminar, clique no botão preto 'FECHAR O DIA'. Eu calculo seu lucro e já mudo a data pra amanhã.", el: "btn-concluir-dia" },
-            { t: "Fechamento Total", r: "Se você prefere lançar o valor total do dia de uma vez só, use a opção 'Fechamento Total'. O valor vai somar nas suas Entradas de Serviço.", el: "area-lancamento" },
-            { t: "Como vejo o mês todo?", r: "Use esses botões aqui em cima. 'Ver Hoje' mostra só o dia atual. 'Ver Mês' soma tudo do dia 1 até agora.", el: "area-visao" },
-            { t: "Como fecho o Mês?", r: "No último dia, clique no botão lá embaixo 'FECHAR E ARQUIVAR'. Eu salvo tudo no Histórico e limpo a tela pro mês novo.", el: "btn-fechar-mes" },
-            { t: "Contas Fixas (Água/Luz)", r: "Na aba CASA, cadastre suas contas. Se você pagar, o botão vira 'OK' verde. Se vencer hoje e não pagar, fica vermelho!", el: "area-fixas", aba: "casa" },
-            { t: "Vendi um produto, e agora?", r: "Lance como 'Venda de Produto'. Eu separo o dinheiro dos produtos num card azul, pra não misturar com sua mão de obra.", el: "area-dashboard" },
-            { t: "Como vejo meses antigos?", r: "Tudo que você fecha vai pra aba HISTÓRICO. Lá tem um botão 'Ver Detalhes' pra ver o raio-x completo.", el: "nav-historico", aba: "historico" }
+            { t: "Botões Rápidos", r: "Criei botões com 25, 45 e 65 pra você não precisar digitar sempre. É só clicar e LANÇAR!", el: "area-lancamento" },
+            { t: "Sons e Confete", r: "Quando você lança lucro, faz barulho de caixa! E quando fecha o dia, solta confete na tela!", el: "btn-concluir-dia" },
+            { t: "Olho Curioso 👁️", r: "Tem gente olhando? Clica no olho lá em cima (perto do relógio) que eu embaço todos os valores.", el: "btn-privacy" },
+            { t: "Categorias", r: "Na aba Casa, agora tem botões 'Mercado', 'Farmácia' pra facilitar a descrição.", el: "descCasa", aba:"casa" },
+            { t: "Como lanço um corte?", r: "É fácil! Na aba Salão, coloque o valor, escolha 'Serviço' e clique em LANÇAR.", el: "area-lancamento" },
+            { t: "Como funciona o Fiado?", r: "Se o cliente não pagou, marque a caixinha 'Marcar como FIADO'. O valor vai pro cartão roxo.", el: "card-fiado" },
+            { t: "Onde coloco despesas?", r: "Lance como 'Despesa/Saída' aqui no Salão. Se foi gasto pessoal, vá para a aba CASA.", el: "card-saida" },
+            { t: "Pra que serve Fechar o Dia?", r: "Todo dia, quando terminar, clique no botão preto 'FECHAR O DIA'.", el: "btn-concluir-dia" },
+            { t: "Como vejo o mês todo?", r: "Use os botões 'Ver Hoje' e 'Ver Mês' no topo.", el: "area-visao" }
         ];
 
         function abrirTutorial() {
@@ -411,6 +525,54 @@
             voltarMenu();
         }
 
+        // --- FUNCOES AUXILIARES ---
+        function setValor(val) {
+            document.getElementById('valorSalao').value = val;
+        }
+
+        function setDescCasa(txt) {
+            document.getElementById('descCasa').value = txt;
+        }
+
+        function alternarPrivacidade() {
+            document.body.classList.toggle('privacy-active');
+            const btn = document.getElementById('btn-privacy');
+            btn.innerText = document.body.classList.contains('privacy-active') ? '🔒' : '👁️';
+        }
+
+        // --- RELOGIO E TEMA ---
+        function atualizarRelogio() {
+            const agora = new Date();
+            const horas = String(agora.getHours()).padStart(2, '0');
+            const minutos = String(agora.getMinutes()).padStart(2, '0');
+            const segundos = String(agora.getSeconds()).padStart(2, '0');
+            const dia = String(agora.getDate()).padStart(2, '0');
+            const mes = String(agora.getMonth() + 1).padStart(2, '0');
+            
+            document.getElementById('relogio-hora').textContent = `${horas}:${minutos}:${segundos}`;
+            document.getElementById('relogio-data').textContent = `${dia}/${mes}`;
+        }
+
+        function carregarTema() {
+            const temaSalvo = localStorage.getItem('jm_tema');
+            if (temaSalvo === 'dark') {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('btn-theme').textContent = '☀️';
+            }
+        }
+
+        function alternarTema() {
+            if (document.body.getAttribute('data-theme') === 'dark') {
+                document.body.removeAttribute('data-theme');
+                document.getElementById('btn-theme').textContent = '🌙';
+                localStorage.setItem('jm_tema', 'light');
+            } else {
+                document.body.setAttribute('data-theme', 'dark');
+                document.getElementById('btn-theme').textContent = '☀️';
+                localStorage.setItem('jm_tema', 'dark');
+            }
+        }
+
         // --- CORE ---
         window.onload = function() {
             const hoje = new Date().toISOString().split('T')[0];
@@ -418,14 +580,16 @@
             document.getElementById('dataSalao').value = hoje;
             document.getElementById('dataCasa').value = hoje;
             document.getElementById('nova-conta-data').value = hoje;
+            
+            setInterval(atualizarRelogio, 1000);
+            atualizarRelogio();
+            carregarTema();
 
             setTimeout(() => { document.getElementById('loader-bar').style.width = '100%'; }, 100);
             setTimeout(() => {
                 document.getElementById('pro-loader').classList.add('finish-loading');
-                setTimeout(() => document.getElementById('modal-calendario').style.display = 'flex', 600);
+                confirmarDataInicial();
             }, 2500);
-            
-            renderizarFixas();
         };
 
         function confirmarDataInicial() {
@@ -511,6 +675,13 @@
 
             if (!desc || isNaN(valor) || !data) { showToast('Preencha os campos!', 'error'); return; }
 
+            // SOM
+            if(tipo.includes('entrada')) {
+                audioCaixa.currentTime = 0; audioCaixa.play().catch(e=>{});
+            } else {
+                audioPapel.currentTime = 0; audioPapel.play().catch(e=>{});
+            }
+
             transacoes.unshift({
                 id: Date.now(), desc, valor, categoria: origem, tipo,
                 status: isPendente ? 'pendente' : 'pago',
@@ -540,6 +711,7 @@
                     transacoes[idx].status = 'pago';
                     localStorage.setItem('jm_financas_v28', JSON.stringify(transacoes));
                     atualizarTela();
+                    audioCaixa.currentTime = 0; audioCaixa.play().catch(e=>{});
                     showToast('Pagamento Confirmado!', 'success');
                 }
             }
@@ -553,7 +725,6 @@
 
             contasFixas.forEach(c => {
                 const diaConta = parseInt(c.dia);
-                // Verifica se já foi paga neste mês
                 const jaPago = transacoes.some(t => 
                     t.desc === c.desc && 
                     t.dataISO.startsWith(mesAtual) && 
@@ -569,27 +740,26 @@
                 if (jaPago) {
                     classeExtra = 'conta-paga';
                     statusMsg += ' <span class="badge-pago">PAGO ✅</span>';
-                    // Botão desativado visualmente
                     btnHtml = `<button disabled style="border:none; background:none; color:#2ecc71; font-weight:bold; margin-right:5px; opacity:0.7;">Ok</button>`;
                 } else {
                     if (venceHoje) {
                         classeExtra = 'vencendo-hoje';
                         statusMsg += '<br>⚠️ PAGAR AGORA!';
                     }
-                    btnHtml = `<button onclick="lancarFixa(${c.id})" style="border:none; background:${venceHoje ? '#c0392b' : '#d6eaf8'}; color:${venceHoje ? 'white' : '#2980b9'}; padding:8px 12px; border-radius:8px; font-weight:bold; cursor:pointer; margin-right:5px;">Pagar</button>`;
+                    btnHtml = `<button onclick="lancarFixa(${c.id})" style="border:none; background:${venceHoje ? '#c0392b' : 'var(--info-bg)'}; color:${venceHoje ? 'white' : 'var(--info)'}; padding:8px 12px; border-radius:8px; font-weight:bold; cursor:pointer; margin-right:5px;">Pagar</button>`;
                 }
                 
                 div.innerHTML += `
                 <div class="item ${classeExtra}">
                     <div style="flex:1;">
                         <strong>${c.desc} ${venceHoje ? '<span class="alert-badge">HOJE!</span>' : ''}</strong>
-                        <small style="color:${venceHoje ? 'red' : '#777'}; font-weight:${venceHoje ? 'bold' : 'normal'}">
+                        <small style="color:${venceHoje ? 'red' : 'var(--text-secondary)'}; font-weight:${venceHoje ? 'bold' : 'normal'}; display:block;">
                             ${statusMsg}
                         </small>
                     </div>
                     <div>
                         ${btnHtml}
-                        <button onclick="delFixa(${c.id})" style="border:none; background:none; color:#999;">x</button>
+                        <button onclick="delFixa(${c.id})" style="border:none; background:none; color:var(--text-secondary);">x</button>
                     </div>
                 </div>`;
             });
@@ -629,27 +799,28 @@
                 el.className = 'item';
                 
                 let icone = '✂️'; let colorClass = 'text-green'; let sinal = '+';
-                let bgIcon = '#eafaf1';
+                let bgIcon = 'var(--success-bg)';
+                let corTextoValor = 'var(--success)';
 
-                if(t.tipo === 'entrada_produto') { icone='🧴'; colorClass='text-prod'; bgIcon='#e0fbfb'; }
-                if(t.tipo === 'entrada_total') { icone='💰'; colorClass='text-primary'; bgIcon='#ebf5fb'; }
-                if(t.tipo === 'saida') { icone='💸'; colorClass='text-red'; sinal='-'; bgIcon='#fdedeb'; }
+                if(t.tipo === 'entrada_produto') { icone='🧴'; bgIcon='var(--produto-bg)'; corTextoValor='var(--produto)'; }
+                if(t.tipo === 'entrada_total') { icone='💰'; bgIcon='var(--info-bg)'; corTextoValor='var(--info)'; }
+                if(t.tipo === 'saida') { icone='💸'; sinal='-'; bgIcon='var(--danger-bg)'; corTextoValor='var(--danger)'; }
                 
-                let actionBtn = `<button onclick="remover(${t.id})" style="background:none; border:none; color:#ccc; font-size:1.2rem;">&times;</button>`;
+                let actionBtn = `<button onclick="remover(${t.id})" style="background:none; border:none; color:var(--text-secondary); font-size:1.2rem;">&times;</button>`;
                 
                 if(t.status === 'pendente') {
-                    icone='⚠️'; colorClass='text-primary'; sinal=''; bgIcon='var(--fiado-bg)';
+                    icone='⚠️'; sinal=''; bgIcon='var(--fiado-bg)'; corTextoValor='var(--fiado)';
                     actionBtn = `<button onclick="receber(${t.id}, ${t.valor})" style="background:var(--success); color:white; border:none; padding:5px 10px; border-radius:6px; font-weight:bold; margin-right:10px;">RECEBER</button>` + actionBtn;
                     el.style.borderLeft = "4px solid var(--fiado)";
                 }
 
                 el.innerHTML = `
-                    <div style="display:flex; align-items:center; flex:1;">
+                    <div class="item-valor" style="display:flex; align-items:center; flex:1;">
                         <div class="item-icon" style="background:${bgIcon}">${icone}</div>
-                        <div><strong>${t.desc}</strong><small>${t.dataDisplay}</small></div>
+                        <div><strong>${t.desc}</strong><small style="display:block; color:var(--text-secondary);">${t.dataDisplay}</small></div>
                     </div>
                     <div style="text-align:right;">
-                        <div class="${colorClass}" style="font-weight:bold; margin-right:10px;">${sinal} R$ ${t.valor.toFixed(2)}</div>
+                        <div class="valor" style="font-weight:bold; margin-right:10px; color:${corTextoValor};">${sinal} R$ ${t.valor.toFixed(2)}</div>
                     </div>
                     ${actionBtn}
                 `;
@@ -686,12 +857,41 @@
             let lucro = 0; doDia.forEach(t => t.tipo.includes('entrada') ? lucro+=t.valor : lucro-=t.valor);
 
             if(confirm(`✅ FECHAR O DIA?\n\nLucro: R$ ${lucro.toFixed(2)}\n\nIr para amanhã?`)) {
+                if(lucro > 0) dispararConfete();
+                
                 const d = new Date(hoje); d.setDate(d.getDate() + 1);
                 const amanha = d.toISOString().split('T')[0];
                 document.getElementById('dataSalao').value = amanha;
                 mudarVisao('hoje');
                 showToast('Dia Concluído!', 'success');
             }
+        }
+
+        function dispararConfete() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            let particles = [];
+            for(let i=0; i<100; i++) {
+                particles.push({
+                    x: Math.random()*canvas.width, y: Math.random()*canvas.height - canvas.height,
+                    color: `hsl(${Math.random()*360}, 100%, 50%)`,
+                    size: Math.random()*10+5, speed: Math.random()*5+2
+                });
+            }
+            function draw() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                particles.forEach((p, i) => {
+                    p.y += p.speed;
+                    ctx.fillStyle = p.color;
+                    ctx.fillRect(p.x, p.y, p.size, p.size);
+                    // REMOVIDO: Linha que fazia resetar para o topo
+                });
+                // Continua o loop enquanto houver partícula na tela
+                if(particles.some(p => p.y < canvas.height)) requestAnimationFrame(draw);
+                else ctx.clearRect(0,0,canvas.width,canvas.height);
+            }
+            draw();
         }
 
         function fecharMes() {
@@ -744,15 +944,15 @@
                     <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
                         <div>
                             <strong>${h.nome}</strong><br>
-                            <small>${h.data}</small>
+                            <small style="color:var(--text-secondary);">${h.data}</small>
                         </div>
-                        <div class="text-green" style="font-weight:bold; font-size:1.2rem;">
+                        <div class="valor" style="font-weight:bold; font-size:1.2rem; color:var(--success);">
                             R$ ${h.totais.lucro.toFixed(2)}
                         </div>
                     </div>
                     <div style="display:flex; gap:10px; margin-top:10px;">
-                        <button onclick='verDetalhes(${JSON.stringify(h)})' style="flex:1; background:#333; color:white; border:none; padding:10px; border-radius:10px;">📄 Ver Detalhes</button>
-                        <button onclick="if(confirm('Apagar?')) { historicoFechado=historicoFechado.filter(x=>x.id!==${h.id}); localStorage.setItem('jm_historico_v17', JSON.stringify(historicoFechado)); renderizarHistorico(); }" style="background:#fadbd8; color:#c0392b; border:none; padding:10px 15px; border-radius:10px;">🗑️</button>
+                        <button onclick='verDetalhes(${JSON.stringify(h)})' style="flex:1; background:var(--input-bg); color:var(--text-primary); border:none; padding:10px; border-radius:10px;">📄 Ver Detalhes</button>
+                        <button onclick="if(confirm('Apagar?')) { historicoFechado=historicoFechado.filter(x=>x.id!==${h.id}); localStorage.setItem('jm_historico_v17', JSON.stringify(historicoFechado)); renderizarHistorico(); }" style="background:var(--danger-bg); color:var(--danger); border:none; padding:10px 15px; border-radius:10px;">🗑️</button>
                     </div>
                 </div>`;
             });
@@ -763,25 +963,24 @@
             document.getElementById('titulo-detalhes').innerText = "Resumo: " + hist.nome;
             container.innerHTML = '';
 
-            // Resumo unificado
             let servTotal = hist.totais.serv + hist.totais.total;
             container.innerHTML += `
-            <div style="margin-bottom:20px; background:#f9f9f9; padding:15px; border-radius:16px; border:1px solid #eee;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:#555;">Serviços (+Total):</span> <strong>R$ ${servTotal.toFixed(2)}</strong></div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:#555;">Produtos:</span> <strong>R$ ${hist.totais.prod.toFixed(2)}</strong></div>
+            <div style="margin-bottom:20px; background:var(--input-bg); padding:15px; border-radius:16px; border:1px solid var(--border-color);">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--text-secondary);">Serviços (+Total):</span> <strong>R$ ${servTotal.toFixed(2)}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--text-secondary);">Produtos:</span> <strong>R$ ${hist.totais.prod.toFixed(2)}</strong></div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--danger);">(-) Saídas Salão:</span> <span style="color:var(--danger); font-weight:bold;">- R$ ${hist.totais.saida.toFixed(2)}</span></div>
                 <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--danger);">(-) Saídas Casa:</span> <span style="color:var(--danger); font-weight:bold;">- R$ ${hist.totais.casa.toFixed(2)}</span></div>
                 <hr style="border:0; border-top:2px dashed #ddd; margin:10px 0;">
                 <div style="display:flex; justify-content:space-between; font-size:1.1rem;"><span style="font-weight:800;">SOBRA FINAL:</span> <span style="color:var(--success); font-weight:800;">R$ ${hist.totais.lucro.toFixed(2)}</span></div>
             </div>
-            <h4 style="margin:20px 0 10px 0; color:#888; font-size:0.9rem; text-transform:uppercase;">Diário (Salão)</h4>`;
+            <h4 style="margin:20px 0 10px 0; color:var(--text-secondary); font-size:0.9rem; text-transform:uppercase;">Diário (Salão)</h4>`;
 
             if(!hist.detalhes || hist.detalhes.length === 0) {
-                container.innerHTML += "<p style='color:#999; text-align:center;'>Sem detalhes diários.</p>";
+                container.innerHTML += "<p style='color:var(--text-secondary); text-align:center;'>Sem detalhes diários.</p>";
             } else {
                 hist.detalhes.forEach(d => {
                     container.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f0f0f0;">
+                    <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid var(--border-color);">
                         <span>📅 ${d.data}</span>
                         <strong style="color:${d.valor>=0?'var(--success)':'var(--danger)'}">R$ ${d.valor.toFixed(2)}</strong>
                     </div>`;
@@ -815,6 +1014,54 @@
                 renderizarFixas(); 
                 showToast('Paga!', 'success');
             }
+        }
+
+        function fazerBackup() {
+            const dadosBackup = {
+                transacoes: transacoes,
+                fixas: contasFixas,
+                historico: historicoFechado,
+                versao: '2.0',
+                dataBackup: new Date().toLocaleDateString()
+            };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(dadosBackup));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "Backup_JMFinanceiro_" + new Date().toISOString().split('T')[0] + ".json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+            showToast('Backup Baixado!', 'success');
+        }
+
+        function triggerRestore() {
+            document.getElementById('input-restore').click();
+        }
+
+        function restaurarDados(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const dados = JSON.parse(e.target.result);
+                    if (dados.transacoes && dados.fixas && dados.historico) {
+                        if(confirm('⚠️ ATENÇÃO: Isso vai substituir todos os dados atuais pelos dados do arquivo. Deseja continuar?')) {
+                            localStorage.setItem('jm_financas_v28', JSON.stringify(dados.transacoes));
+                            localStorage.setItem('jm_fixas_v5', JSON.stringify(dados.fixas));
+                            localStorage.setItem('jm_historico_v17', JSON.stringify(dados.historico));
+                            alert('✅ Dados restaurados com sucesso! A página será recarregada.');
+                            location.reload();
+                        }
+                    } else {
+                        alert('❌ Arquivo inválido ou antigo.');
+                    }
+                } catch (err) {
+                    alert('❌ Erro ao ler arquivo.');
+                }
+            };
+            reader.readAsText(file);
         }
     </script>
 </body>
