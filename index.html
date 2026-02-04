@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#1a1a1a">
     <title>JM Financeiro Ultra</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1a1a1a">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="icon-192.png">
@@ -348,7 +348,7 @@
 
     <script>
         // --- DADOS ---
-        let transacoes = JSON.parse(localStorage.getItem('jm_financas_v27')) || [];
+        let transacoes = JSON.parse(localStorage.getItem('jm_financas_v28')) || [];
         let contasFixas = JSON.parse(localStorage.getItem('jm_fixas_v5')) || [];
         let historicoFechado = JSON.parse(localStorage.getItem('jm_historico_v17')) || [];
         let visaoAtual = 'hoje';
@@ -362,9 +362,9 @@
             { t: "Fechamento Total", r: "Se você prefere lançar o valor total do dia de uma vez só, use a opção 'Fechamento Total'. O valor vai somar nas suas Entradas de Serviço.", el: "area-lancamento" },
             { t: "Como vejo o mês todo?", r: "Use esses botões aqui em cima. 'Ver Hoje' mostra só o dia atual. 'Ver Mês' soma tudo do dia 1 até agora.", el: "area-visao" },
             { t: "Como fecho o Mês?", r: "No último dia, clique no botão lá embaixo 'FECHAR E ARQUIVAR'. Eu salvo tudo no Histórico e limpo a tela pro mês novo.", el: "btn-fechar-mes" },
-            { t: "Contas Fixas (Água/Luz)", r: "Na aba CASA, cadastre suas contas. Se você pagar, ela fica verde. Se vencer hoje e não pagar, ela fica vermelha!", el: "area-fixas", aba: "casa" },
+            { t: "Contas Fixas (Água/Luz)", r: "Na aba CASA, cadastre suas contas. Se você pagar, o botão vira 'OK' verde. Se vencer hoje e não pagar, fica vermelho!", el: "area-fixas", aba: "casa" },
             { t: "Vendi um produto, e agora?", r: "Lance como 'Venda de Produto'. Eu separo o dinheiro dos produtos num card azul, pra não misturar com sua mão de obra.", el: "area-dashboard" },
-            { t: "Como vejo meses antigos?", r: "Tudo que você fecha vai pra aba HISTÓRICO. Lá tem um botão 'Ver Detalhes' pra ver quanto ganhou dia por dia.", el: "nav-historico", aba: "historico" }
+            { t: "Como vejo meses antigos?", r: "Tudo que você fecha vai pra aba HISTÓRICO. Lá tem um botão 'Ver Detalhes' pra ver o raio-x completo.", el: "nav-historico", aba: "historico" }
         ];
 
         function abrirTutorial() {
@@ -436,7 +436,7 @@
             
             document.getElementById('modal-calendario').style.display = 'none';
             atualizarTela();
-            renderizarFixas(); // Re-checa vencimentos com a data nova
+            renderizarFixas();
         }
 
         function mudarAba(aba) {
@@ -517,11 +517,10 @@
                 dataDisplay: data.split('-').reverse().join('/'), dataISO: data
             });
 
-            localStorage.setItem('jm_financas_v27', JSON.stringify(transacoes));
+            localStorage.setItem('jm_financas_v28', JSON.stringify(transacoes));
             atualizarTela();
             showToast('Lançamento Salvo!', 'success');
 
-            // Se pagou conta fixa, re-renderiza para atualizar status
             if(origem === 'casa') renderizarFixas();
 
             if(origem === 'salao') {
@@ -539,7 +538,7 @@
                 const idx = transacoes.findIndex(t => t.id === id);
                 if(idx > -1) {
                     transacoes[idx].status = 'pago';
-                    localStorage.setItem('jm_financas_v27', JSON.stringify(transacoes));
+                    localStorage.setItem('jm_financas_v28', JSON.stringify(transacoes));
                     atualizarTela();
                     showToast('Pagamento Confirmado!', 'success');
                 }
@@ -549,7 +548,7 @@
         function renderizarFixas() {
             const div = document.getElementById('listaFixas'); div.innerHTML = '';
             const dataSelecionada = document.getElementById('dataCasa').value;
-            const mesAtual = dataSelecionada.substring(0, 7); // "YYYY-MM"
+            const mesAtual = dataSelecionada.substring(0, 7); 
             const diaHoje = parseInt(dataSelecionada.split('-')[2]);
 
             contasFixas.forEach(c => {
@@ -570,7 +569,8 @@
                 if (jaPago) {
                     classeExtra = 'conta-paga';
                     statusMsg += ' <span class="badge-pago">PAGO ✅</span>';
-                    btnHtml = `<button disabled style="border:none; background:none; color:#2ecc71; font-weight:bold; margin-right:5px;">Ok</button>`;
+                    // Botão desativado visualmente
+                    btnHtml = `<button disabled style="border:none; background:none; color:#2ecc71; font-weight:bold; margin-right:5px; opacity:0.7;">Ok</button>`;
                 } else {
                     if (venceHoje) {
                         classeExtra = 'vencendo-hoje';
@@ -658,7 +658,7 @@
                 else listaCasa.appendChild(el);
             });
 
-            // LOGICA: Total do Dia soma junto com Serviços
+            // LOGICA NOVA: FECHAMENTO TOTAL SOMA COM SERVIÇOS
             let servicosExibicao = sServicos + sTotal;
 
             document.getElementById('totalServicos').innerText = `R$ ${servicosExibicao.toFixed(2)}`;
@@ -674,7 +674,7 @@
         function remover(id) {
             if(confirm('Tem certeza que deseja apagar?')) {
                 transacoes = transacoes.filter(t => t.id !== id);
-                localStorage.setItem('jm_financas_v27', JSON.stringify(transacoes));
+                localStorage.setItem('jm_financas_v28', JSON.stringify(transacoes));
                 atualizarTela();
                 renderizarFixas();
             }
@@ -715,7 +715,8 @@
                 } else if (t.categoria==='casa') totais.casa+=t.valor;
             });
 
-            let lucroLiquido = (totais.serv + totais.prod + totais.total) - totais.saida;
+            // SOBRA REAL = Tudo que entrou - (Saida Salao + Saida Casa)
+            let lucroLiquido = (totais.serv + totais.prod + totais.total) - totais.saida - totais.casa;
             let listaDias = Object.keys(diasMap).map(data => { return {data: data, valor: diasMap[data]} });
 
             historicoFechado.unshift({ 
@@ -728,7 +729,7 @@
 
             localStorage.setItem('jm_historico_v17', JSON.stringify(historicoFechado));
             transacoes = transacoes.filter(t => t.status === 'pendente');
-            localStorage.setItem('jm_financas_v27', JSON.stringify(transacoes));
+            localStorage.setItem('jm_financas_v28', JSON.stringify(transacoes));
             
             atualizarTela();
             renderizarHistorico();
@@ -762,25 +763,29 @@
             document.getElementById('titulo-detalhes').innerText = "Resumo: " + hist.nome;
             container.innerHTML = '';
 
+            // Resumo unificado
+            let servTotal = hist.totais.serv + hist.totais.total;
+            container.innerHTML += `
+            <div style="margin-bottom:20px; background:#f9f9f9; padding:15px; border-radius:16px; border:1px solid #eee;">
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:#555;">Serviços (+Total):</span> <strong>R$ ${servTotal.toFixed(2)}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:#555;">Produtos:</span> <strong>R$ ${hist.totais.prod.toFixed(2)}</strong></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--danger);">(-) Saídas Salão:</span> <span style="color:var(--danger); font-weight:bold;">- R$ ${hist.totais.saida.toFixed(2)}</span></div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:8px;"><span style="color:var(--danger);">(-) Saídas Casa:</span> <span style="color:var(--danger); font-weight:bold;">- R$ ${hist.totais.casa.toFixed(2)}</span></div>
+                <hr style="border:0; border-top:2px dashed #ddd; margin:10px 0;">
+                <div style="display:flex; justify-content:space-between; font-size:1.1rem;"><span style="font-weight:800;">SOBRA FINAL:</span> <span style="color:var(--success); font-weight:800;">R$ ${hist.totais.lucro.toFixed(2)}</span></div>
+            </div>
+            <h4 style="margin:20px 0 10px 0; color:#888; font-size:0.9rem; text-transform:uppercase;">Diário (Salão)</h4>`;
+
             if(!hist.detalhes || hist.detalhes.length === 0) {
-                container.innerHTML = "<p>Sem detalhes diários salvos.</p>";
+                container.innerHTML += "<p style='color:#999; text-align:center;'>Sem detalhes diários.</p>";
             } else {
                 hist.detalhes.forEach(d => {
                     container.innerHTML += `
-                    <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px dashed #ddd;">
+                    <div style="display:flex; justify-content:space-between; padding:12px 0; border-bottom:1px solid #f0f0f0;">
                         <span>📅 ${d.data}</span>
                         <strong style="color:${d.valor>=0?'var(--success)':'var(--danger)'}">R$ ${d.valor.toFixed(2)}</strong>
                     </div>`;
                 });
-                 let servTotal = hist.totais.serv + hist.totais.total;
-                 container.innerHTML += `
-                    <div style="margin-top:20px; background:#f9f9f9; padding:10px; border-radius:10px;">
-                        <div style="display:flex; justify-content:space-between;"><small>Serviços (+Total):</small> <span>R$ ${servTotal.toFixed(2)}</span></div>
-                        <div style="display:flex; justify-content:space-between;"><small>Produtos:</small> <span>R$ ${hist.totais.prod.toFixed(2)}</span></div>
-                        <div style="display:flex; justify-content:space-between;"><small>Saídas:</small> <span style="color:red">- R$ ${hist.totais.saida.toFixed(2)}</span></div>
-                        <hr style="border:0; border-top:1px solid #ccc; margin:5px 0;">
-                        <div style="display:flex; justify-content:space-between; font-weight:bold;"><span>LUCRO:</span> <span style="color:green">R$ ${hist.totais.lucro.toFixed(2)}</span></div>
-                    </div>`;
             }
             document.getElementById('modal-detalhes').style.display = 'flex';
         }
@@ -805,7 +810,7 @@
             const c=contasFixas.find(x=>x.id===id);
             if(confirm(`Pagar ${c.desc}?`)){
                 transacoes.unshift({ id:Date.now(), desc:c.desc, valor:c.valor, categoria:'casa', tipo:'saida', status:'pago', dataDisplay:document.getElementById('dataCasa').value.split('-').reverse().join('/'), dataISO:document.getElementById('dataCasa').value });
-                localStorage.setItem('jm_financas_v27', JSON.stringify(transacoes)); 
+                localStorage.setItem('jm_financas_v28', JSON.stringify(transacoes)); 
                 atualizarTela(); 
                 renderizarFixas(); 
                 showToast('Paga!', 'success');
